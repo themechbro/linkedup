@@ -11,7 +11,7 @@
 !.yarn/versions
 
 #env
-/backend/.env
+.env
 
 # testing
 /coverage
