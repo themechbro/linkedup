@@ -11,12 +11,14 @@ import {
   IconButton,
   Tooltip,
   Typography,
+  Divider,
 } from "@mui/joy";
 import { Eye, EyeClosed } from "lucide-react";
 import Link from "next/link";
 import { useState, useActionState, useEffect } from "react";
 import { LoginAction } from "./sign-in-action";
 import { useRouter } from "next/navigation";
+import GoogleIcon from "@mui/icons-material/Google";
 
 export default function LinkedUpSignInPageForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,7 +30,7 @@ export default function LinkedUpSignInPageForm() {
   useEffect(() => {
     if (formState.success) {
       const timer = setTimeout(() => {
-        router.push("/home");
+        router.replace("/home");
       }, 1500); // wait a moment so snackbar shows
       return () => clearTimeout(timer);
     }
@@ -89,6 +91,18 @@ export default function LinkedUpSignInPageForm() {
             Sign In
           </Button>
         </Box>
+        <Divider sx={{ color: "black", mb: 3 }} />
+        <Button
+          startDecorator={<GoogleIcon />}
+          component="a"
+          href={`${process.env.NEXT_PUBLIC_HOST_IP}/api/auth/google`}
+          variant="soft"
+          sx={{ fontFamily: "Roboto Condensed" }}
+          color="success"
+        >
+          Login Using Google
+        </Button>
+        <Divider sx={{ color: "black", mt: 3, mb: 3 }} />
         <Typography level="body-sm" sx={sx_typography}>
           New to LinkedUp? {""}
           <Link href="/sign-up" style={{ textDecoration: "underline" }}>

@@ -47,7 +47,8 @@
 //     </Box>
 //   );
 // }
-
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 import { Box } from "@mui/joy";
 import { redirect } from "next/navigation";
 import { fetchAuthData } from "../lib/fetchAuthData";
