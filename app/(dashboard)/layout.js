@@ -1,7 +1,6 @@
-// import { Box } from "@mui/joy";
 // import { cookies } from "next/headers";
 // import { redirect } from "next/navigation";
-
+// import { Box } from "@mui/joy";
 // async function fetchAuthData() {
 //   const cookieStore = await cookies();
 
@@ -14,6 +13,8 @@
 //           Cookie: cookieStore.toString(),
 //           "Content-Type": "application/json",
 //         },
+//         credentials: "include",
+//         cache: "no-store",
 //       }
 //     );
 
@@ -29,21 +30,14 @@
 //   }
 // }
 
-// export default async function AuthLayout({ children }) {
+// export default async function LinkedUpHomeLayout({ children }) {
 //   const authData = await fetchAuthData();
-//   if (authData.isAuthenticated) {
-//     redirect("/home");
+//   if (!authData.isAuthenticated) {
+//     redirect("/sign-in?error=notLoggedIn");
 //   }
 //   return (
-//     <Box
-//       className="h-screen w-full"
-//       sx={{
-//         background: "linear-gradient(135deg, #ffffffff 0%, #ffffffff 100%)",
-//         position: "relative", // Establish a stacking context for the layout
-//       }}
-//     >
-//       {" "}
-//       <Box sx={{ position: "relative", zIndex: 10 }}>{children}</Box>
+//     <Box className="flex h-full w-full">
+//       <main className="flex-1 overflow-y-auto">{children}</main>
 //     </Box>
 //   );
 // }
@@ -51,19 +45,14 @@
 import { Box } from "@mui/joy";
 import { redirect } from "next/navigation";
 import { fetchAuthData } from "../lib/fetchAuthData";
-export default async function AuthLayout({ children }) {
+
+export default async function DashboardLayout({ children }) {
   const authData = await fetchAuthData();
-  if (authData.isAuthenticated) redirect("/home");
+  if (!authData.isAuthenticated) redirect("/sign-in?error=notLoggedIn");
 
   return (
-    <Box
-      className="h-screen w-full"
-      sx={{
-        background: "linear-gradient(135deg, #fff 0%, #fff 100%)",
-        position: "relative",
-      }}
-    >
-      <Box sx={{ position: "relative", zIndex: 10 }}>{children}</Box>
+    <Box className="flex h-full w-full">
+      <main className="flex-1 overflow-y-auto">{children}</main>
     </Box>
   );
 }

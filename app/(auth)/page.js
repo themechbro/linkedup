@@ -3,6 +3,7 @@ import LandingNav from "./components/landing-nav";
 import Image from "next/image";
 import landingLogo from "@/public/assets/landingPage.png"; // Assuming this path is correct
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function LinkedUpLandingPage() {
   return (
@@ -43,6 +44,17 @@ export default function LinkedUpLandingPage() {
           >
             Get Started
           </Button>
+
+          <Typography
+            level="body-md"
+            textColor="text.secondary"
+            fontFamily="Roboto Condensed"
+          >
+            New to LinkedUp?{" "}
+            <Link href="/sign-up" style={{ textDecoration: "underline" }}>
+              Sign up
+            </Link>
+          </Typography>
         </Box>
         <Box
           sx={{
