@@ -1,0 +1,131 @@
+"use client";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Divider,
+  Avatar,
+} from "@mui/joy";
+
+export default function ProfileHomeCard() {
+  return (
+    <Card
+      sx={{
+        width: "100%",
+        borderRadius: "16px",
+        overflow: "hidden",
+        boxShadow: "sm",
+        backgroundColor: "#fff",
+        position: "relative",
+        p: 0,
+        fontFamily: "Roboto Condensed",
+      }}
+    >
+      {/* Cover Photo */}
+      <Box
+        sx={{
+          height: 80,
+          background: "linear-gradient(135deg, #0a66c2 0%, #004182 100%)",
+        }}
+      />
+
+      {/* Profile Section */}
+      <CardContent sx={{ textAlign: "center", mt: -5 }}>
+        <Avatar
+          src="https://i.pravatar.cc/150?img=68"
+          alt="John Doe"
+          sx={{
+            width: 80,
+            height: 80,
+            border: "3px solid white",
+            mx: "auto",
+            boxShadow: "md",
+          }}
+        />
+        <Typography
+          level="h4"
+          sx={{
+            mt: 1,
+            fontWeight: 700,
+            fontFamily: "Roboto Condensed",
+          }}
+        >
+          John Doe
+        </Typography>
+        <Typography
+          level="body-sm"
+          sx={{
+            color: "text.secondary",
+            px: 2,
+          }}
+        >
+          Full Stack Developer (MERN & Next.js) | SOC Analyst L1 | Open to
+          opportunities
+        </Typography>
+      </CardContent>
+
+      {/* Divider */}
+      <Divider />
+
+      {/* Stats Section */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          px: 2.5,
+          py: 1.5,
+          alignItems: "center",
+        }}
+      >
+        <Box>
+          <Typography level="body-sm" sx={{ color: "text.secondary" }}>
+            Profile views
+          </Typography>
+          <Typography
+            level="body-sm"
+            sx={{ fontWeight: 700, color: "#0a66c2" }}
+          >
+            174
+          </Typography>
+        </Box>
+
+        <Box>
+          <Typography level="body-sm" sx={{ color: "text.secondary" }}>
+            Post impressions
+          </Typography>
+          <Typography
+            level="body-sm"
+            sx={{ fontWeight: 700, color: "#0a66c2" }}
+          >
+            1,203
+          </Typography>
+        </Box>
+      </Box>
+
+      <Divider />
+
+      {/* Action Section */}
+      <CardContent sx={{ textAlign: "center", py: 2 }}>
+        <Button
+          variant="outlined"
+          size="sm"
+          sx={{
+            borderRadius: "20px",
+            borderColor: "#0a66c2",
+            color: "#0a66c2",
+            fontWeight: 600,
+            textTransform: "none",
+            "&:hover": {
+              backgroundColor: "#e8f3ff",
+              borderColor: "#004182",
+            },
+          }}
+        >
+          View Profile
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}

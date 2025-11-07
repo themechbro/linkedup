@@ -19,6 +19,7 @@ import { useState, useActionState, useEffect } from "react";
 import { LoginAction } from "./sign-in-action";
 import { useRouter } from "next/navigation";
 import GoogleIcon from "@mui/icons-material/Google";
+import FacebookIcon from "@mui/icons-material/Facebook";
 
 export default function LinkedUpSignInPageForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -101,6 +102,21 @@ export default function LinkedUpSignInPageForm() {
           color="success"
         >
           Login Using Google
+        </Button>
+        <Divider>
+          <Typography level="body-lg" sx={{ fontFamily: "Roboto Condensed" }}>
+            OR
+          </Typography>
+        </Divider>
+        <Button
+          startDecorator={<FacebookIcon />}
+          component="a"
+          href={`${process.env.NEXT_PUBLIC_HOST_IP}/api/auth/facebook`}
+          variant="soft"
+          sx={{ fontFamily: "Roboto Condensed" }}
+          color="primary"
+        >
+          Login Using Facebook
         </Button>
         <Divider sx={{ color: "black", mt: 3, mb: 3 }} />
         <Typography level="body-sm" sx={sx_typography}>
