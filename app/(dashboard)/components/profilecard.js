@@ -8,8 +8,40 @@ import {
   Divider,
   Avatar,
 } from "@mui/joy";
+import { redirect } from "next/navigation";
+import { useState, useEffect } from "react";
 
 export default function ProfileHomeCard() {
+  const [userDetail, setUserDetail] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchUser = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_HOST_IP}/api/auth/user_details`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+      const data = await response.json();
+      setUserDetail(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  const handleProfileViewClick = () => {
+    redirect(`/profile/${userDetail.meta.user_id}`);
+  };
+
   return (
     <Card
       sx={{
@@ -34,8 +66,10 @@ export default function ProfileHomeCard() {
       {/* Profile Section */}
       <CardContent sx={{ textAlign: "center", mt: -5 }}>
         <Avatar
-          src="https://i.pravatar.cc/150?img=68"
-          alt="John Doe"
+          src={
+            userDetail?.userData?.avatar || "https://i.pravatar.cc/150?img=68"
+          }
+          alt={userDetail?.userData?.full_name || "User"}
           sx={{
             width: 80,
             height: 80,
@@ -52,7 +86,9 @@ export default function ProfileHomeCard() {
             fontFamily: "Roboto Condensed",
           }}
         >
-          John Doe
+          {loading
+            ? "Loading..."
+            : userDetail?.userData?.full_name ?? "John Doe"}
         </Typography>
         <Typography
           level="body-sm"
@@ -61,8 +97,8 @@ export default function ProfileHomeCard() {
             px: 2,
           }}
         >
-          Full Stack Developer (MERN & Next.js) | SOC Analyst L1 | Open to
-          opportunities
+          {userDetail?.userData?.headline ??
+            "Full Stack Developer | SOC Analyst L1 | Open to opportunities"}
         </Typography>
       </CardContent>
 
@@ -122,6 +158,7 @@ export default function ProfileHomeCard() {
               borderColor: "#004182",
             },
           }}
+          onClick={handleProfileViewClick}
         >
           View Profile
         </Button>

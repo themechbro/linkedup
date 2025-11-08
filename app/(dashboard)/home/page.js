@@ -3,8 +3,9 @@ import { Box, Typography, Button } from "@mui/joy";
 import { Power } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ProfileHomeCard from "../components/profilecard";
-import PostForm from "../components/postForm";
+// import PostForm from "../components/postForm";
 import PostFeed from "../components/postFeed";
+import PostComposer from "../components/postComposer";
 
 export default function HomePage() {
   const router = useRouter();
@@ -26,26 +27,90 @@ export default function HomePage() {
       console.error("Logout Error", error);
     }
   };
+
   return (
+    // <Box
+    //   sx={{
+    //     flex: 1,
+    //     pt: { xs: "56px", md: "64px" }, // account for navbar height
+    //     display: "grid",
+    //     gridTemplateColumns: {
+    //       xs: "1fr",
+    //       md: "minmax(250px, 1fr) 3fr minmax(300px, 1.5fr)",
+    //     },
+    //     gap: 4,
+    //     px: { xs: 2, md: 4 },
+    //     overflow: "hidden",
+    //     maxWidth: "1600px",
+    //     mx: "auto",
+    //     backgroundColor: "#f3f2ef",
+    //     minHeight: "100vh",
+    //   }}
+    // >
+    //   {/* Left Sidebar */}
+    //   <Box
+    //     component="aside"
+    //     sx={{
+    //       display: { xs: "none", md: "block" },
+    //       position: "sticky",
+    //       top: 80,
+    //       alignSelf: "start",
+    //     }}
+    //   >
+    //     <ProfileHomeCard />
+    //   </Box>
+
+    //   {/* Main Feed */}
+    //   <Box
+    //     component="main"
+    //     sx={{
+    //       overflowY: "auto",
+    //       display: "flex",
+    //       flexDirection: "column",
+    //       gap: 2,
+    //       pb: 4,
+    //     }}
+    //   >
+    //     <Typography>Welcome</Typography>
+    //     <Button onClick={handleLogout}>Logout</Button>
+
+    //     <>
+    //       <PostComposer currentUser={{ full_name: "John Doe" }} />
+    //       <PostFeed />
+    //     </>
+    //   </Box>
+
+    //   {/* Right Sidebar */}
+    //   <Box
+    //     component="aside"
+    //     sx={{
+    //       display: { xs: "none", md: "block" },
+    //       position: "sticky",
+    //       top: 80,
+    //       alignSelf: "start",
+    //     }}
+    //   >
+    //     {/* News, Widgets, Ads */}
+    //     <ProfileHomeCard />
+    //   </Box>
+    // </Box>
+
     <Box
       sx={{
-        flex: 1,
-        pt: { xs: "56px", md: "64px" }, // account for navbar height
         display: "grid",
         gridTemplateColumns: {
           xs: "1fr",
           md: "minmax(250px, 1fr) 3fr minmax(300px, 1.5fr)",
         },
-        gap: 4,
+        gap: 3,
+        pt: { xs: "56px", md: "64px" }, // navbar offset
         px: { xs: 2, md: 4 },
-        overflow: "hidden",
-        maxWidth: "1600px",
-        mx: "auto",
         backgroundColor: "#f3f2ef",
-        minHeight: "100vh",
+        height: "100vh",
+        overflow: "hidden", // prevent full-page scroll
       }}
     >
-      {/* Left Sidebar */}
+      {/* LEFT SIDEBAR */}
       <Box
         component="aside"
         sx={{
@@ -53,32 +118,56 @@ export default function HomePage() {
           position: "sticky",
           top: 80,
           alignSelf: "start",
+          height: "calc(100vh - 80px)",
+          overflowY: "auto",
+          pr: 1,
         }}
       >
         <ProfileHomeCard />
       </Box>
 
-      {/* Main Feed */}
+      {/* MAIN FEED */}
       <Box
         component="main"
         sx={{
           overflowY: "auto",
+          height: "calc(100vh - 80px)",
+          pb: 4,
           display: "flex",
           flexDirection: "column",
           gap: 2,
-          pb: 4,
+          scrollbarWidth: "none", // Firefox
+          msOverflowStyle: "none", // IE and Edge
+          "&::-webkit-scrollbar": {
+            display: "none", // Chrome, Safari
+          },
         }}
       >
-        <Typography>Welcome</Typography>
-        <Button onClick={handleLogout}>Logout</Button>
+        <Typography
+          level="h3"
+          sx={{
+            fontFamily: "Roboto Condensed",
+            fontWeight: 700,
+            mb: 1,
+          }}
+        >
+          Welcome
+        </Typography>
 
-        <>
-          <PostForm currentUser={{ name: "John Doe" }} />
-          <PostFeed />
-        </>
+        <Button
+          variant="soft"
+          color="danger"
+          sx={{ alignSelf: "flex-end", mb: 2 }}
+          onClick={handleLogout}
+        >
+          Logout
+        </Button>
+
+        <PostComposer currentUser={{ full_name: "John Doe" }} />
+        <PostFeed />
       </Box>
 
-      {/* Right Sidebar */}
+      {/* RIGHT SIDEBAR */}
       <Box
         component="aside"
         sx={{
@@ -86,9 +175,12 @@ export default function HomePage() {
           position: "sticky",
           top: 80,
           alignSelf: "start",
+          height: "calc(100vh - 80px)",
+          overflowY: "auto",
+          pl: 1,
         }}
       >
-        {/* News, Widgets, Ads */}
+        {/* You can replace this with widgets, news, or suggestions */}
         <ProfileHomeCard />
       </Box>
     </Box>
