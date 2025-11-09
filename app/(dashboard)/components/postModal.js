@@ -10,6 +10,7 @@ import {
   IconButton,
   Button,
   Avatar,
+  FormControl,
 } from "@mui/joy";
 import { Image, Video, Send, Smile } from "lucide-react";
 
@@ -51,13 +52,16 @@ export default function PostModal({
           </Box>
         </Box>
 
-        <Textarea
-          minRows={5}
-          placeholder="What do you want to talk about?"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          sx={{ mb: 2 }}
-        />
+        <FormControl required>
+          <Textarea
+            minRows={5}
+            placeholder="What do you want to talk about?"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            sx={{ mb: 2 }}
+            required
+          />
+        </FormControl>
 
         {/* Media preview */}
         {media.length > 0 && (

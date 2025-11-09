@@ -1,116 +1,53 @@
 "use client";
-import { Box, Typography, Button } from "@mui/joy";
-import { Power } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Box, Divider } from "@mui/joy";
 import ProfileHomeCard from "../components/profilecard";
-// import PostForm from "../components/postForm";
 import PostFeed from "../components/postFeed";
 import PostComposer from "../components/postComposer";
+import LinkedupNewsCard from "../components/linkeup_news_card";
+import { useEffect, useState, useCallback } from "react";
 
 export default function HomePage() {
-  const router = useRouter();
-  const handleLogout = async () => {
+  const [fetchedData, setFetchedData] = useState({});
+  const fetchUser = useCallback(async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_IP}/api/auth/logout`,
+        `${process.env.NEXT_PUBLIC_HOST_IP}/api/auth/user_details`,
         {
-          method: "POST",
+          method: "GET",
           credentials: "include",
         }
       );
-      if (!response.ok) {
-        throw new Error("Logout failed");
-      }
-      router.push("/sign-in");
-      router.refresh();
+      const data = await response.json();
+      setFetchedData(data);
     } catch (error) {
-      console.error("Logout Error", error);
+      console.log(error);
     }
-  };
+  }, []);
 
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchUser();
+  }, [fetchUser]); // Now fetchUser is stable
   return (
-    // <Box
-    //   sx={{
-    //     flex: 1,
-    //     pt: { xs: "56px", md: "64px" }, // account for navbar height
-    //     display: "grid",
-    //     gridTemplateColumns: {
-    //       xs: "1fr",
-    //       md: "minmax(250px, 1fr) 3fr minmax(300px, 1.5fr)",
-    //     },
-    //     gap: 4,
-    //     px: { xs: 2, md: 4 },
-    //     overflow: "hidden",
-    //     maxWidth: "1600px",
-    //     mx: "auto",
-    //     backgroundColor: "#f3f2ef",
-    //     minHeight: "100vh",
-    //   }}
-    // >
-    //   {/* Left Sidebar */}
-    //   <Box
-    //     component="aside"
-    //     sx={{
-    //       display: { xs: "none", md: "block" },
-    //       position: "sticky",
-    //       top: 80,
-    //       alignSelf: "start",
-    //     }}
-    //   >
-    //     <ProfileHomeCard />
-    //   </Box>
-
-    //   {/* Main Feed */}
-    //   <Box
-    //     component="main"
-    //     sx={{
-    //       overflowY: "auto",
-    //       display: "flex",
-    //       flexDirection: "column",
-    //       gap: 2,
-    //       pb: 4,
-    //     }}
-    //   >
-    //     <Typography>Welcome</Typography>
-    //     <Button onClick={handleLogout}>Logout</Button>
-
-    //     <>
-    //       <PostComposer currentUser={{ full_name: "John Doe" }} />
-    //       <PostFeed />
-    //     </>
-    //   </Box>
-
-    //   {/* Right Sidebar */}
-    //   <Box
-    //     component="aside"
-    //     sx={{
-    //       display: { xs: "none", md: "block" },
-    //       position: "sticky",
-    //       top: 80,
-    //       alignSelf: "start",
-    //     }}
-    //   >
-    //     {/* News, Widgets, Ads */}
-    //     <ProfileHomeCard />
-    //   </Box>
-    // </Box>
-
     <Box
       sx={{
+        flex: 1,
+        pt: { xs: "56px", md: "64px" }, // account for navbar height
         display: "grid",
         gridTemplateColumns: {
           xs: "1fr",
           md: "minmax(250px, 1fr) 3fr minmax(300px, 1.5fr)",
         },
-        gap: 3,
-        pt: { xs: "56px", md: "64px" }, // navbar offset
+        gap: 4,
         px: { xs: 2, md: 4 },
+        overflow: "hidden",
+        maxWidth: "1600px",
+        mx: "auto",
         backgroundColor: "#f3f2ef",
-        height: "100vh",
-        overflow: "hidden", // prevent full-page scroll
+        minHeight: "100vh",
       }}
     >
-      {/* LEFT SIDEBAR */}
+      {/* Left Sidebar */}
       <Box
         component="aside"
         sx={{
@@ -118,56 +55,30 @@ export default function HomePage() {
           position: "sticky",
           top: 80,
           alignSelf: "start",
-          height: "calc(100vh - 80px)",
-          overflowY: "auto",
-          pr: 1,
         }}
       >
         <ProfileHomeCard />
       </Box>
 
-      {/* MAIN FEED */}
+      {/* Main Feed */}
       <Box
         component="main"
         sx={{
           overflowY: "auto",
-          height: "calc(100vh - 80px)",
-          pb: 4,
           display: "flex",
           flexDirection: "column",
           gap: 2,
-          scrollbarWidth: "none", // Firefox
-          msOverflowStyle: "none", // IE and Edge
-          "&::-webkit-scrollbar": {
-            display: "none", // Chrome, Safari
-          },
+          pb: 4,
         }}
       >
-        <Typography
-          level="h3"
-          sx={{
-            fontFamily: "Roboto Condensed",
-            fontWeight: 700,
-            mb: 1,
-          }}
-        >
-          Welcome
-        </Typography>
-
-        <Button
-          variant="soft"
-          color="danger"
-          sx={{ alignSelf: "flex-end", mb: 2 }}
-          onClick={handleLogout}
-        >
-          Logout
-        </Button>
-
-        <PostComposer currentUser={{ full_name: "John Doe" }} />
+        <PostComposer
+          currentUser={{ full_name: fetchedData?.userData?.full_name }}
+        />
+        <Divider></Divider>
         <PostFeed />
       </Box>
 
-      {/* RIGHT SIDEBAR */}
+      {/* Right Sidebar */}
       <Box
         component="aside"
         sx={{
@@ -175,14 +86,102 @@ export default function HomePage() {
           position: "sticky",
           top: 80,
           alignSelf: "start",
-          height: "calc(100vh - 80px)",
-          overflowY: "auto",
-          pl: 1,
         }}
       >
-        {/* You can replace this with widgets, news, or suggestions */}
-        <ProfileHomeCard />
+        {/* News, Widgets, Ads */}
+        <LinkedupNewsCard />
       </Box>
     </Box>
+
+    // <Box
+    //   sx={{
+    //     display: "grid",
+    //     gridTemplateColumns: {
+    //       xs: "1fr",
+    //       md: "minmax(250px, 1fr) 3fr minmax(300px, 1.5fr)",
+    //     },
+    //     gap: 3,
+    //     pt: { xs: "56px", md: "64px" }, // navbar offset
+    //     px: { xs: 2, md: 4 },
+    //     backgroundColor: "#f3f2ef",
+    //     height: "100vh",
+    //     overflow: "hidden", // prevent full-page scroll
+    //   }}
+    // >
+    //   {/* LEFT SIDEBAR */}
+    //   <Box
+    //     component="aside"
+    //     sx={{
+    //       display: { xs: "none", md: "block" },
+    //       position: "sticky",
+    //       top: 80,
+    //       alignSelf: "start",
+    //       height: "calc(100vh - 80px)",
+    //       overflowY: "auto",
+    //       pr: 1,
+    //     }}
+    //   >
+    //     <ProfileHomeCard />
+    //   </Box>
+
+    //   {/* MAIN FEED */}
+    //   <Box
+    //     component="main"
+    //     sx={{
+    //       overflowY: "auto",
+    //       height: "calc(100vh - 80px)",
+    //       pb: 4,
+    //       display: "flex",
+    //       flexDirection: "column",
+    //       gap: 2,
+    //       scrollbarWidth: "none", // Firefox
+    //       msOverflowStyle: "none", // IE and Edge
+    //       "&::-webkit-scrollbar": {
+    //         display: "none", // Chrome, Safari
+    //       },
+    //     }}
+    //   >
+    //     <Typography
+    //       level="h3"
+    //       sx={{
+    //         fontFamily: "Roboto Condensed",
+    //         fontWeight: 700,
+    //         mb: 1,
+    //       }}
+    //     >
+    //       Welcome
+    //     </Typography>
+
+    //     <Button
+    //       variant="soft"
+    //       color="danger"
+    //       sx={{ alignSelf: "flex-end", mb: 2 }}
+    //       onClick={handleLogout}
+    //     >
+    //       Logout
+    //     </Button>
+
+    //     <PostComposer currentUser={{ full_name: "John Doe" }} />
+    //     <Divider></Divider>
+    //     <PostFeed />
+    //   </Box>
+
+    //   {/* RIGHT SIDEBAR */}
+    //   <Box
+    //     component="aside"
+    //     sx={{
+    //       display: { xs: "none", md: "block" },
+    //       position: "sticky",
+    //       top: 80,
+    //       alignSelf: "start",
+    //       height: "calc(100vh - 80px)",
+    //       overflowY: "auto",
+    //       pl: 1,
+    //     }}
+    //   >
+    //     {/* You can replace this with widgets, news, or suggestions */}
+    //     <LinkedupNewsCard />
+    //   </Box>
+    // </Box>
   );
 }

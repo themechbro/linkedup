@@ -10,6 +10,7 @@ import {
 } from "@mui/joy";
 import { ThumbsUp, MessageCircleMore, Send, Repeat } from "lucide-react";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 export default function PostCard({ post }) {
   const media =
@@ -69,28 +70,43 @@ export default function PostCard({ post }) {
         {media.length > 0 && (
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
             {media.map((m, i) =>
-              m.type === "video" ? (
-                <video
+              m.type === "videos" ? (
+                <Box
                   key={i}
-                  src={m.url}
-                  controls
-                  style={{
+                  sx={{
+                    position: "relative",
                     width: "100%",
-                    borderRadius: "12px",
-                    marginTop: "10px",
+                    aspectRatio: "16 / 9",
+                    mt: "10px",
+                    borderRadius: "lg",
+                    overflow: "hidden",
+                    bgcolor: "black",
                   }}
-                />
+                >
+                  <video
+                    src={m.url}
+                    controls
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                    }}
+                  />
+                </Box>
               ) : (
-                <img
+                <Box
                   key={i}
-                  src={m.url}
-                  alt="post media"
-                  style={{
+                  sx={{
+                    position: "relative",
                     width: "100%",
-                    borderRadius: "12px",
-                    marginTop: "10px",
+                    aspectRatio: "16 / 9", // Or another ratio that fits your images
+                    mt: "10px",
+                    borderRadius: "lg",
+                    overflow: "hidden",
                   }}
-                />
+                >
+                  <Image src={m.url} alt="post media" fill sizes="100vw" />
+                </Box>
               )
             )}
           </Box>
@@ -98,7 +114,13 @@ export default function PostCard({ post }) {
 
         <Box
           className="call_to_action"
-          sx={{ display: "flex", flexDirection: "row", gap: 2, mt: 2 }}
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "column", md: "row" },
+            gap: 2,
+            mt: 2,
+            flexShrink: 1,
+          }}
         >
           <Button
             size="sm"

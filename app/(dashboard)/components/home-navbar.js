@@ -1,5 +1,5 @@
 "use client";
-import { Button, Typography } from "@mui/joy";
+import { Avatar, Button, Typography } from "@mui/joy";
 import {
   AppBar,
   Toolbar,
@@ -14,6 +14,7 @@ import { home_nav_items } from "../misc/home-nav-items";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu } from "lucide-react";
+import NavDropdown from "./nav-dropdown";
 
 export default function HomeNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -84,6 +85,9 @@ export default function HomeNavbar() {
               </Link>
             );
           })}
+        </Box>
+        <Box>
+          <NavDropdown />
         </Box>
       </Toolbar>
       {/* Mobile */}
