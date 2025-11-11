@@ -7,10 +7,13 @@ import {
   Box,
   IconButton,
   Button,
+  Divider,
 } from "@mui/joy";
 import { ThumbsUp, MessageCircleMore, Send, Repeat } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import CommentComposer from "./comment-composer";
+import CommentList from "./commentList";
 
 export default function PostCard({ post }) {
   const media =
@@ -21,7 +24,13 @@ export default function PostCard({ post }) {
   const [liked, setLiked] = useState(
     post.liked_by?.includes(post.current_user) || false
   );
+  const [openComment, setOpenComment] = useState(false);
+  const [comments, setComments] = useState(post.comments || []);
+  const [newComment, setNewComment] = useState(null);
 
+  const handleCommentAdded = (newComment) => {
+    setComments((prev) => [...prev, newComment]);
+  };
   const handleLike = async () => {
     try {
       const res = await fetch(
@@ -111,7 +120,25 @@ export default function PostCard({ post }) {
             )}
           </Box>
         )}
-
+        {likes > 0 && (
+          <Box className="counts">
+            <Typography level="body-sm" color="neutral">
+              {(() => {
+                if (liked) {
+                  if (likes === 1) {
+                    return "You liked this";
+                  }
+                  const otherLikes = likes - 1;
+                  return `You and ${otherLikes} other${
+                    otherLikes > 1 ? "s" : ""
+                  } liked this`;
+                }
+                return `${likes} like${likes > 1 ? "s" : ""}`;
+              })()}
+            </Typography>
+          </Box>
+        )}
+        <Divider />
         <Box
           className="call_to_action"
           sx={{
@@ -131,11 +158,12 @@ export default function PostCard({ post }) {
           >
             {liked ? "Liked" : "Like"}
           </Button>
-          <Typography level="body-sm">{likes} likes</Typography>
+
           <Button
             startDecorator={<MessageCircleMore />}
             variant="plain"
             color="neutral"
+            onClick={() => setOpenComment((prev) => !prev)}
           >
             Comment
           </Button>
@@ -146,6 +174,17 @@ export default function PostCard({ post }) {
             Share
           </Button>
         </Box>
+
+        {openComment ? (
+          <Box>
+            <Divider sx={{ mt: 1, mb: 1 }} />
+            <CommentList post_id={post.id} newComment={newComment} />
+            <CommentComposer
+              post_id={post.id}
+              onCommentAdded={handleCommentAdded}
+            />
+          </Box>
+        ) : null}
       </CardContent>
     </Card>
   );
