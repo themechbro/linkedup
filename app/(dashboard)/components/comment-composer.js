@@ -3,7 +3,11 @@ import { useState } from "react";
 import { Box, Input, IconButton, Tooltip, CircularProgress } from "@mui/joy";
 import { Send, Image } from "lucide-react";
 
-export default function CommentComposer({ post_id, onCommentAdded }) {
+export default function CommentComposer({
+  post_id,
+  parent_comment_id,
+  onCommentAdded,
+}) {
   const [content, setContent] = useState("");
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -21,6 +25,8 @@ export default function CommentComposer({ post_id, onCommentAdded }) {
       const formData = new FormData();
       formData.append("content", content);
       if (file) formData.append("image", file);
+      if (parent_comment_id)
+        formData.append("parent_comment_id", parent_comment_id);
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts/${post_id}/comments`,

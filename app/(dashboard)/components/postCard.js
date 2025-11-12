@@ -28,8 +28,8 @@ export default function PostCard({ post }) {
   const [comments, setComments] = useState(post.comments || []);
   const [newComment, setNewComment] = useState(null);
 
-  const handleCommentAdded = (newComment) => {
-    setComments((prev) => [...prev, newComment]);
+  const handleCommentAdded = (comment) => {
+    setNewComment(comment);
   };
   const handleLike = async () => {
     try {
@@ -138,6 +138,7 @@ export default function PostCard({ post }) {
             </Typography>
           </Box>
         )}
+
         <Divider />
         <Box
           className="call_to_action"
@@ -175,16 +176,20 @@ export default function PostCard({ post }) {
           </Button>
         </Box>
 
-        {openComment ? (
+        {openComment && (
           <Box>
             <Divider sx={{ mt: 1, mb: 1 }} />
-            <CommentList post_id={post.id} newComment={newComment} />
+
+            {/* CommentComposer comes first */}
             <CommentComposer
               post_id={post.id}
               onCommentAdded={handleCommentAdded}
             />
+
+            {/* Then the list — it listens for changes in newComment */}
+            <CommentList post_id={post.id} newComment={newComment} />
           </Box>
-        ) : null}
+        )}
       </CardContent>
     </Card>
   );
