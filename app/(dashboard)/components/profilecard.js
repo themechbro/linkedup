@@ -10,6 +10,7 @@ import {
 } from "@mui/joy";
 import { redirect } from "next/navigation";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function ProfileHomeCard() {
   const [userDetail, setUserDetail] = useState(null);
