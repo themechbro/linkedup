@@ -93,7 +93,7 @@ export default function PostCard({ post }) {
                   }}
                 >
                   <video
-                    src={m.url}
+                    src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
                     controls
                     style={{
                       width: "100%",
@@ -114,7 +114,13 @@ export default function PostCard({ post }) {
                     overflow: "hidden",
                   }}
                 >
-                  <Image src={m.url} alt="post media" fill sizes="100vw" />
+                  <Image
+                    src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                    alt="post media"
+                    fill
+                    sizes="100vw"
+                    unoptimized
+                  />
                 </Box>
               )
             )}

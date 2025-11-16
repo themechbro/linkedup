@@ -11,7 +11,6 @@ export default function ViewProfilePage() {
         backgroundColor: "#F4F2EE",
       }}
     >
-      <Typography level="h2">Profile View</Typography>
       <ProfileFirst />
     </Box>
   );
