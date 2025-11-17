@@ -4,7 +4,9 @@ import Image from "next/image";
 import ProfilePictureModal from "./prof_picture-modal";
 import { useState } from "react";
 
-export default function ProfileFirst() {
+export default function ProfileFirst({ profile }) {
+  console.log(profile);
+
   const [picModal, setPicModal] = useState({
     open: false,
     type: "",
@@ -28,7 +30,11 @@ export default function ProfileFirst() {
       {/* Cover Photo */}
       <Box sx={{ position: "relative", width: "100%", height: 280 }}>
         <Image
-          src={coverPic}
+          src={
+            profile.coverPic
+              ? `${process.env.NEXT_PUBLIC_HOST_IP}${profile.coverPic}`
+              : coverPic
+          }
           alt="cover photo"
           fill
           style={{ objectFit: "cover", cursor: "pointer" }}
@@ -46,7 +52,11 @@ export default function ProfileFirst() {
       <Box sx={{ px: 3, pb: 3, mt: -8 }}>
         {/* Profile pic floating on cover */}
         <Avatar
-          src={profilePic}
+          src={
+            profile.profilePicture
+              ? `${process.env.NEXT_PUBLIC_HOST_IP}${profile.profilePicture}`
+              : profilePic
+          }
           sx={{
             width: 150,
             height: 150,
@@ -75,12 +85,11 @@ export default function ProfileFirst() {
           {/* Left Section */}
           <Box sx={{ mt: 2 }}>
             <Typography level="h2" sx={{ fontWeight: 700 }}>
-              Adrin Paul
+              {profile.fullName}
             </Typography>
 
             <Typography level="body-md" sx={{ mt: 0.5 }}>
-              Full Stack Developer (MERN & Next.js) | SOC Analyst L1 | Open to
-              Work | Immediate Joiner
+              {profile.headline}
             </Typography>
 
             <Typography level="body-sm" sx={{ color: "neutral.500", mt: 0.5 }}>
