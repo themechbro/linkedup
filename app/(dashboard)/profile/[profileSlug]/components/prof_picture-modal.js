@@ -14,67 +14,13 @@ import { Camera, Trash } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
-// export default function ProfilePictureModal({ open, close, type, imgUrl }) {
-//   const [newImage, setNewImage] = useState("");
-
-//   return (
-//     <Modal open={open} onClose={close}>
-//       <ModalDialog sx={{ width: 600, height: 500 }}>
-//         <ModalClose />
-//         <Box>
-//           <Typography sx={{ mb: 3, fontFamily: "Roboto Condensed" }} level="h3">
-//             {type == "cover" ? "Cover Photo" : null}
-//             {type == "profile" ? "Profile Picture" : null}
-//           </Typography>
-//           <Box
-//             sx={{
-//               width: "100%",
-//               height: 300,
-//               borderRadius: 10,
-//               overflow: "hidden",
-//             }}
-//           >
-//             <Image
-//               src={imgUrl}
-//               alt="preview"
-//               width={100}
-//               height={100}
-//               style={{ width: "100%", height: "100%", objectFit: "contain" }}
-//             />
-//           </Box>
-//           <Divider sx={{ mt: 3, mb: 3 }} />
-//           <Box
-//             className="buttons"
-//             sx={{ width: "100%", gap: 5, display: "flex" }}
-//           >
-//             <Input
-//               id="upload-photo"
-//               type="file"
-//               accept="image/*"
-//               hidden
-//               onChange={(e) => setNewImage(e)}
-//             />
-
-//             <Tooltip title="Upload New Photo">
-//               <label htmlFor="upload-photo">
-//                 <IconButton component="span">
-//                   <Camera /> <Typography>Upload Photo</Typography>
-//                 </IconButton>
-//               </label>
-//             </Tooltip>
-//             <Tooltip title="Remove Photo">
-//               <IconButton>
-//                 <Trash /> <Typography>Remove Photo</Typography>
-//               </IconButton>
-//             </Tooltip>
-//           </Box>
-//         </Box>
-//       </ModalDialog>
-//     </Modal>
-//   );
-// }
-
-export default function ProfilePictureModal({ open, close, type, imgUrl }) {
+export default function ProfilePictureModal({
+  open,
+  close,
+  type,
+  imgUrl,
+  onUploadComplete,
+}) {
   const [newImage, setNewImage] = useState(null);
   const [previewURL, setPreviewURL] = useState("");
 
@@ -98,6 +44,7 @@ export default function ProfilePictureModal({ open, close, type, imgUrl }) {
     if (!newImage) return;
 
     const formData = new FormData();
+    formData.append("type", type);
     formData.append("image", newImage);
 
     try {
@@ -113,16 +60,10 @@ export default function ProfilePictureModal({ open, close, type, imgUrl }) {
       const data = await res.json();
 
       if (data.success) {
-        // Immediately update preview
-        setPreviewURL(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}${data.profile_picture}`
-        );
-
-        // Optionally notify parent component
-        if (typeof onUpdated === "function") {
-          onUpdated(data.profile_picture);
+        if (onUploadComplete) {
+          onUploadComplete();
         }
-
+        setNewImage(null);
         close();
       }
     } catch (err) {
@@ -131,16 +72,21 @@ export default function ProfilePictureModal({ open, close, type, imgUrl }) {
   };
 
   useEffect(() => {
-    if (imgUrl) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (open) {
       setPreviewURL(imgUrl);
+    } else {
+      // Cleanup when modal closes
+      setPreviewURL("");
+      setNewImage(null);
     }
-  }, [imgUrl]);
+  }, [open, imgUrl]);
 
   return (
     <Modal open={open} onClose={close}>
-      <ModalDialog sx={{ width: 600, height: 500 }}>
-        <ModalClose />
+      <ModalDialog
+        sx={{ width: "clamp(300px, 90vw, 600px)", p: 3, borderRadius: "lg" }}
+      >
+        <ModalClose variant="plain" sx={{ m: 1 }} />
         <Box>
           <Typography sx={{ mb: 3, fontFamily: "Roboto Condensed" }} level="h3">
             {type === "cover" ? "Cover Photo" : "Profile Picture"}
@@ -151,24 +97,31 @@ export default function ProfilePictureModal({ open, close, type, imgUrl }) {
             sx={{
               width: "100%",
               height: 300,
-              borderRadius: 10,
+              borderRadius: "md",
               overflow: "hidden",
               bgcolor: "#f5f5f5",
+              position: "relative",
             }}
           >
-            <Image
-              src={previewURL}
-              alt="preview"
-              width={100}
-              height={100}
-              style={{ width: "100%", height: "100%", objectFit: "contain" }}
-            />
+            {previewURL && (
+              <Image
+                src={previewURL}
+                alt="preview"
+                fill
+                style={{ objectFit: "contain" }}
+              />
+            )}
           </Box>
 
           <Divider sx={{ mt: 3, mb: 3 }} />
 
-          {/* BUTTONS */}
-          <Box sx={{ width: "100%", gap: 5, display: "flex" }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             {/* Hidden Input */}
             <Input
               id="upload-photo"
@@ -178,31 +131,35 @@ export default function ProfilePictureModal({ open, close, type, imgUrl }) {
               onChange={handleImageSelect}
             />
 
-            {/* Upload Button */}
-            <Tooltip title="Upload New Photo">
-              <label htmlFor="upload-photo">
-                <IconButton component="span">
-                  <Camera />
-                  <Typography>Upload Photo</Typography>
-                </IconButton>
-              </label>
-            </Tooltip>
+            <Box sx={{ display: "flex", gap: 2 }}>
+              {/* Upload Button */}
+              <Tooltip title="Upload New Photo">
+                <Button
+                  component="label"
+                  htmlFor="upload-photo"
+                  variant="outlined"
+                  startDecorator={<Camera />}
+                >
+                  Upload
+                </Button>
+              </Tooltip>
 
-            {/* Remove Button */}
-            <Tooltip title="Remove Selected Photo">
-              <IconButton onClick={handleRemove} disabled={!newImage}>
-                <Trash />
-                <Typography>Remove Photo</Typography>
-              </IconButton>
-            </Tooltip>
+              {/* Remove Button */}
+              <Tooltip title="Remove Selected Photo">
+                <Button
+                  onClick={handleRemove}
+                  disabled={!newImage}
+                  variant="soft"
+                  color="danger"
+                  startDecorator={<Trash />}
+                >
+                  Remove
+                </Button>
+              </Tooltip>
+            </Box>
 
             {/* SAVE button */}
-            <Button
-              variant="solid"
-              color="primary"
-              disabled={!newImage}
-              onClick={handleSubmit}
-            >
+            <Button disabled={!newImage} onClick={handleSubmit}>
               Save
             </Button>
           </Box>
@@ -211,3 +168,144 @@ export default function ProfilePictureModal({ open, close, type, imgUrl }) {
     </Modal>
   );
 }
+
+// import {
+//   Box,
+//   Modal,
+//   ModalClose,
+//   ModalDialog,
+//   Typography,
+//   IconButton,
+//   Tooltip,
+//   Divider,
+//   Input,
+//   Button,
+// } from "@mui/joy";
+// import { Camera, Trash } from "lucide-react";
+// import Image from "next/image";
+// import { useState, useEffect } from "react";
+
+// export default function ProfilePictureModal({ open, close, type, imgUrl }) {
+//   const [newImage, setNewImage] = useState(null);
+//   const [previewURL, setPreviewURL] = useState("");
+
+//   const buildFullUrl = (url) => {
+//     if (!url) return "";
+//     if (url.startsWith("http")) return url;
+//     return `${process.env.NEXT_PUBLIC_HOST_IP}${url}`;
+//   };
+
+//   useEffect(() => {
+//     if (imgUrl) {
+//       setPreviewURL(buildFullUrl(imgUrl));
+//     }
+//   }, [imgUrl]);
+
+//   const handleImageSelect = (e) => {
+//     const file = e.target.files[0];
+//     if (!file) return;
+
+//     setNewImage(file);
+//     setPreviewURL(URL.createObjectURL(file));
+//   };
+
+//   const handleRemove = () => {
+//     setNewImage(null);
+//     setPreviewURL(buildFullUrl(imgUrl)); // revert to original
+//   };
+
+//   const handleSubmit = async () => {
+//     if (!newImage) return;
+
+//     const formData = new FormData();
+//     formData.append("image", newImage);
+//     formData.append("type", type);
+
+//     try {
+//       const res = await fetch(
+//         `${process.env.NEXT_PUBLIC_HOST_IP}/api/upload/profile_pic`,
+//         {
+//           method: "POST",
+//           credentials: "include",
+//           body: formData,
+//         }
+//       );
+
+//       const data = await res.json();
+
+//       if (data.success) {
+//         setPreviewURL(buildFullUrl(data.profile_picture));
+//         close();
+//       }
+//     } catch (err) {
+//       console.error("Upload failed:", err);
+//     }
+//   };
+
+//   return (
+//     <Modal open={open} onClose={close}>
+//       <ModalDialog sx={{ width: 600, height: 500 }}>
+//         <ModalClose />
+//         <Box>
+//           <Typography sx={{ mb: 3 }} level="h3">
+//             {type === "cover" ? "Cover Photo" : "Profile Picture"}
+//           </Typography>
+
+//           <Box
+//             sx={{
+//               width: "100%",
+//               height: 300,
+//               borderRadius: 10,
+//               overflow: "hidden",
+//               bgcolor: "#f5f5f5",
+//             }}
+//           >
+//             {previewURL && (
+//               <Image
+//                 src={previewURL}
+//                 alt="preview"
+//                 fill
+//                 style={{ objectFit: "contain" }}
+//               />
+//             )}
+//           </Box>
+
+//           <Divider sx={{ mt: 3, mb: 3 }} />
+
+//           <Box sx={{ width: "100%", gap: 5, display: "flex" }}>
+//             <Input
+//               id="upload-photo"
+//               type="file"
+//               accept="image/*"
+//               hidden
+//               onChange={handleImageSelect}
+//             />
+
+//             <Tooltip title="Upload New Photo">
+//               <label htmlFor="upload-photo">
+//                 <IconButton component="span">
+//                   <Camera />
+//                 </IconButton>
+//               </label>
+//             </Tooltip>
+
+//             <Tooltip title="Remove Selected Photo">
+//               <IconButton onClick={handleRemove} disabled={!newImage}>
+//                 <Trash />
+//               </IconButton>
+//             </Tooltip>
+
+//             <Button
+//               variant="solid"
+//               color="primary"
+//               disabled={!newImage}
+//               onClick={handleSubmit}
+//             >
+//               Save
+//             </Button>
+//           </Box>
+//         </Box>
+//       </ModalDialog>
+//     </Modal>
+//   );
+// }

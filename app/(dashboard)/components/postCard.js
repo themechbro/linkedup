@@ -9,13 +9,21 @@ import {
   Button,
   Divider,
 } from "@mui/joy";
-import { ThumbsUp, MessageCircleMore, Send, Repeat } from "lucide-react";
+import {
+  ThumbsUp,
+  MessageCircleMore,
+  Send,
+  Repeat,
+  EllipsisVertical,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import CommentComposer from "./comment-composer";
 import CommentList from "./commentList";
 
 export default function PostCard({ post }) {
+  console.log(post);
+
   const media =
     typeof post.media_url === "string"
       ? JSON.parse(post.media_url)
@@ -54,19 +62,33 @@ export default function PostCard({ post }) {
     <Card variant="outlined" sx={{ borderRadius: "lg" }}>
       <CardContent>
         {/* User info */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
-          <Avatar src={post.avatar || "/default-avatar.png"} />
-          <Box>
-            <Typography level="title-md">{post.full_name}</Typography>
-            <Typography level="body-sm" color="neutral">
-              @{post.username} ·{" "}
-              {new Date(post.created_at).toLocaleString("en-IN", {
-                hour: "2-digit",
-                minute: "2-digit",
-                day: "2-digit",
-                month: "short",
-              })}
-            </Typography>
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+            <Avatar
+              src={
+                post?.profile_picture
+                  ? `${process.env.NEXT_PUBLIC_HOST_IP}${post.profile_picture}`
+                  : "/default.img"
+              }
+            />
+            <Box>
+              <Typography level="title-md">{post.full_name}</Typography>
+              <Typography level="body-sm" color="neutral">
+                @{post.username} ·{" "}
+                {new Date(post.created_at).toLocaleString("en-IN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  day: "2-digit",
+                  month: "short",
+                })}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box className="post-menu">
+            <IconButton>
+              <EllipsisVertical />
+            </IconButton>
           </Box>
         </Box>
 
@@ -126,24 +148,39 @@ export default function PostCard({ post }) {
             )}
           </Box>
         )}
-        {likes > 0 && (
-          <Box className="counts">
-            <Typography level="body-sm" color="neutral">
-              {(() => {
-                if (liked) {
-                  if (likes === 1) {
-                    return "You liked this";
+
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+          {likes > 0 && (
+            <Box className="counts">
+              <Typography level="body-sm" color="neutral">
+                {(() => {
+                  if (liked) {
+                    if (likes === 1) {
+                      return "You liked this";
+                    }
+                    const otherLikes = likes - 1;
+                    return `You and ${otherLikes} other${
+                      otherLikes > 1 ? "s" : ""
+                    } liked this`;
                   }
-                  const otherLikes = likes - 1;
-                  return `You and ${otherLikes} other${
-                    otherLikes > 1 ? "s" : ""
-                  } liked this`;
-                }
-                return `${likes} like${likes > 1 ? "s" : ""}`;
-              })()}
-            </Typography>
-          </Box>
-        )}
+                  return `${likes} like${likes > 1 ? "s" : ""}`;
+                })()}
+              </Typography>
+            </Box>
+          )}
+          {post.comment_count > 0 && (
+            <Box className="comment-counts">
+              <Typography
+                level="body-sm"
+                color="neutral"
+                onClick={() => setOpenComment((prev) => !prev)}
+                sx={{ cursor: "pointer", textDecoration: "underline" }}
+              >
+                {post.comment_count} comments
+              </Typography>
+            </Box>
+          )}
+        </Box>
 
         <Divider />
         <Box

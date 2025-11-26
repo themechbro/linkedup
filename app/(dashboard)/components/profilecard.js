@@ -43,6 +43,9 @@ export default function ProfileHomeCard() {
     redirect(`/profile/${userDetail.meta.user_id}`);
   };
 
+  const fullProfilePic = userDetail?.userData?.profile_picture
+    ? `${process.env.NEXT_PUBLIC_HOST_IP}${userDetail.userData.profile_picture}`
+    : null;
   return (
     <Card
       sx={{
@@ -68,7 +71,9 @@ export default function ProfileHomeCard() {
       <CardContent sx={{ textAlign: "center", mt: -5 }}>
         <Avatar
           src={
-            userDetail?.userData?.avatar || "https://i.pravatar.cc/150?img=68"
+            userDetail?.userData?.profile_picture
+              ? `${process.env.NEXT_PUBLIC_HOST_IP}${userDetail.userData.profile_picture}`
+              : "https://i.pravatar.cc/150?img=68"
           }
           alt={userDetail?.userData?.full_name || "User"}
           sx={{
@@ -79,6 +84,7 @@ export default function ProfileHomeCard() {
             boxShadow: "md",
           }}
         />
+
         <Typography
           level="h4"
           sx={{

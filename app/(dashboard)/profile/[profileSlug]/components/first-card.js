@@ -2,10 +2,12 @@
 import { Avatar, Box, Card, Typography, Button } from "@mui/joy";
 import Image from "next/image";
 import ProfilePictureModal from "./prof_picture-modal";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function ProfileFirst({ profile }) {
   console.log(profile);
+  const router = useRouter();
 
   const [picModal, setPicModal] = useState({
     open: false,
@@ -42,7 +44,9 @@ export default function ProfileFirst({ profile }) {
             setPicModal({
               open: true,
               type: "cover",
-              imgUrl: coverPic,
+              imgUrl: profile.coverPic
+                ? `${process.env.NEXT_PUBLIC_HOST_IP}${profile.coverPic}`
+                : coverPic,
             });
           }}
         />
@@ -68,7 +72,9 @@ export default function ProfileFirst({ profile }) {
             setPicModal({
               open: true,
               type: "profile",
-              imgUrl: profilePic,
+              imgUrl: profile.profilePicture
+                ? `${process.env.NEXT_PUBLIC_HOST_IP}${profile.profilePicture}`
+                : profilePic,
             });
           }}
         />
@@ -118,11 +124,16 @@ export default function ProfileFirst({ profile }) {
       </Box>
       <ProfilePictureModal
         open={picModal.open}
-        close={() => {
-          setPicModal({ open: false });
-        }}
+        close={() =>
+          setPicModal({
+            open: false,
+            type: "",
+            imgUrl: "",
+          })
+        }
         type={picModal.type}
         imgUrl={picModal.imgUrl}
+        onUploadComplete={() => router.refresh()}
       />
     </Card>
   );
