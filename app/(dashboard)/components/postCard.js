@@ -58,6 +58,36 @@ export default function PostCard({ post }) {
     }
   };
 
+  const renderContentWithHashtags = (text) => {
+    if (!text) return null;
+
+    // Regex to find hashtags: a '#' followed by one or more word characters.
+    const hashtagRegex = /(#\w+)/g;
+    const parts = text.split(hashtagRegex);
+
+    return parts.map((part, index) => {
+      if (part.match(hashtagRegex)) {
+        // This part is a hashtag, so we style it.
+        return (
+          <Typography
+            key={index}
+            component="span" // Render as a span to stay inline
+            sx={{
+              fontWeight: "bold",
+              color: "primary.500", // Joy UI's primary blue color
+              cursor: "pointer",
+              "&:hover": { textDecoration: "underline" },
+            }}
+          >
+            {part}
+          </Typography>
+        );
+      }
+      // This part is regular text.
+      return part;
+    });
+  };
+
   return (
     <Card variant="outlined" sx={{ borderRadius: "lg" }}>
       <CardContent>
@@ -93,8 +123,8 @@ export default function PostCard({ post }) {
         </Box>
 
         {/* Content */}
-        <Typography level="body-md" sx={{ mb: 2 }}>
-          {post.content}
+        <Typography level="body-md" sx={{ mb: 2, whiteSpace: "pre-wrap" }}>
+          {renderContentWithHashtags(post.content)}
         </Typography>
 
         {/* Media */}
