@@ -8,6 +8,11 @@ import {
   IconButton,
   Button,
   Divider,
+  Dropdown,
+  Menu,
+  MenuButton,
+  MenuItem,
+  ListItemDecorator,
 } from "@mui/joy";
 import {
   ThumbsUp,
@@ -15,15 +20,15 @@ import {
   Send,
   Repeat,
   EllipsisVertical,
+  Plus,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import CommentComposer from "./comment-composer";
-import CommentList from "./commentList";
+import CommentComposer from "../comments/comment-composer";
+import CommentList from "../comments/commentList";
+import { postMenuItems } from "./menu/items";
 
 export default function PostCard({ post }) {
-  console.log(post);
-
   const media =
     typeof post.media_url === "string"
       ? JSON.parse(post.media_url)
@@ -116,9 +121,64 @@ export default function PostCard({ post }) {
           </Box>
 
           <Box className="post-menu">
-            <IconButton>
-              <EllipsisVertical />
-            </IconButton>
+            {post.current_user !== post.owner ? (
+              <Button
+                variant="plain"
+                sx={{ fontFamily: "Roboto Condensed" }}
+                startDecorator={<Plus />}
+              >
+                Connect
+              </Button>
+            ) : null}
+            <Dropdown>
+              <MenuButton
+                slots={{ root: IconButton }}
+                slotProps={{ root: { variant: "plain", color: "neutral" } }}
+              >
+                <EllipsisVertical />
+              </MenuButton>
+              {/* <Menu>
+                {postMenuItems.map((item, index) => {
+                  return (
+                    <MenuItem
+                      key={index}
+                      sx={{ fontFamily: "Roboto Condensed" }}
+                    >
+                      <ListItemDecorator>{item.icon}</ListItemDecorator>
+                      {item.name}
+                    </MenuItem>
+                  );
+                })}
+              </Menu> */}
+              <Menu>
+                {postMenuItems
+                  .filter((item) => {
+                    // Only show Delete Post if current user owns the post
+                    if (item.name === "Delete Post") {
+                      return post.current_user === post.owner;
+                    }
+                    if (item.name == "Not Interested") {
+                      return post.current_user !== post.owner;
+                    }
+                    if (item.name == "Report Post") {
+                      return post.current_user !== post.owner;
+                    }
+                    if (item.name == "Edit Post") {
+                      return post.current_user === post.owner;
+                    }
+                    return true; // show all other items always
+                  })
+                  .map((item, index) => (
+                    <MenuItem
+                      key={index}
+                      sx={{ fontFamily: "Roboto Condensed" }}
+                    >
+                      <ListItemDecorator>{item.icon}</ListItemDecorator>
+                      {item.name}
+                    </MenuItem>
+                  ))}
+              </Menu>
+            </Dropdown>
           </Box>
         </Box>
 

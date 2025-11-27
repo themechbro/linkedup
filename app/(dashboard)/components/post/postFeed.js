@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Box, CircularProgress, Typography } from "@mui/joy";
+import { Box, CircularProgress, Divider, Typography } from "@mui/joy";
 import PostCard from "./postCard";
 
 export default function PostFeed() {
@@ -64,6 +64,16 @@ export default function PostFeed() {
       {posts.map((post) => (
         <PostCard key={post.id} post={post} />
       ))}
+
+      <Divider>
+        <Typography
+          sx={{
+            fontFamily: "Roboto Condensed",
+          }}
+        >
+          You have caught everything for now
+        </Typography>
+      </Divider>
     </Box>
   );
 }

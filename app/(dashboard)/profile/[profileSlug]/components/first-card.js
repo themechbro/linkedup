@@ -14,9 +14,12 @@ export default function ProfileFirst({ profile }) {
     type: "",
     imgUrl: "",
   });
-  const coverPic =
-    "https://images.unsplash.com/photo-1503264116251-35a269479413";
+  const coverPic = "/default-avatar.png";
   const profilePic = "https://i.pravatar.cc/150?img=68";
+
+  const coverImageUrl = profile.coverPic
+    ? `${process.env.NEXT_PUBLIC_HOST_IP}${profile.coverPic}`
+    : coverPic;
 
   return (
     <Card
@@ -31,15 +34,15 @@ export default function ProfileFirst({ profile }) {
     >
       {/* Cover Photo */}
       <Box sx={{ position: "relative", width: "100%", height: 280 }}>
-        <Image
-          src={
-            profile.coverPic
-              ? `${process.env.NEXT_PUBLIC_HOST_IP}${profile.coverPic}`
-              : coverPic
-          }
+        <img
+          src={coverImageUrl}
           alt="cover photo"
-          fill
-          style={{ objectFit: "cover", cursor: "pointer" }}
+          style={{
+            objectFit: "cover",
+            cursor: "pointer",
+            height: "300px",
+            width: "100%",
+          }}
           onClick={() => {
             setPicModal({
               open: true,

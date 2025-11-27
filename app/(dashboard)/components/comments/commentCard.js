@@ -29,6 +29,7 @@ export default function CommentCard({
   unlikeComment,
 }) {
   const isReplying = replyingTo === comment.comment_id;
+  console.log(comment);
 
   return (
     <Card
@@ -55,7 +56,10 @@ export default function CommentCard({
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             <Avatar
               size="sm"
-              src={comment.profile_pic || "/default-avatar.png"}
+              src={
+                `${process.env.NEXT_PUBLIC_HOST_IP}${comment.profile_picture}` ||
+                "/default-avatar.png"
+              }
               alt={comment.full_name}
             />
             <Box>

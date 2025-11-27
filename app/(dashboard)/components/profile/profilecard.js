@@ -65,7 +65,16 @@ export default function ProfileHomeCard() {
           height: 80,
           background: "linear-gradient(135deg, #0a66c2 0%, #004182 100%)",
         }}
-      />
+      >
+        <img
+          src={
+            userDetail?.userData?.cover_pic
+              ? `${process.env.NEXT_PUBLIC_HOST_IP}${userDetail.userData.cover_pic}`
+              : "/default-avatar.png"
+          }
+          style={{ objectFit: "fit", height: 80, width: "100%" }}
+        />
+      </Box>
 
       {/* Profile Section */}
       <CardContent sx={{ textAlign: "center", mt: -5 }}>
@@ -73,7 +82,7 @@ export default function ProfileHomeCard() {
           src={
             userDetail?.userData?.profile_picture
               ? `${process.env.NEXT_PUBLIC_HOST_IP}${userDetail.userData.profile_picture}`
-              : "https://i.pravatar.cc/150?img=68"
+              : "/default-avatar.png"
           }
           alt={userDetail?.userData?.full_name || "User"}
           sx={{

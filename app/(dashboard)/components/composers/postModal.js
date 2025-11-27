@@ -24,6 +24,7 @@ export default function PostModal({
   handlePost,
   loading,
   currentUser,
+  profileUrl,
 }) {
   return (
     <Modal open={open} onClose={() => setOpen(false)}>
@@ -38,10 +39,7 @@ export default function PostModal({
       >
         <ModalClose />
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <Avatar
-            size="lg"
-            src={currentUser?.profilePic || "/default-avatar.png"}
-          />
+          <Avatar size="lg" src={profileUrl} />
           <Box sx={{ ml: 1 }}>
             <Typography level="title-md">
               {currentUser?.full_name || "User"}

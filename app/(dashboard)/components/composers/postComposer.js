@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -23,6 +23,7 @@ export default function PostComposer({ currentUser }) {
   const [media, setMedia] = useState([]);
   const [mediaType, setMediaType] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [finalUrl, setFinalUrl] = useState("");
 
   const handleFileChange = (e, type) => {
     const files = Array.from(e.target.files);
@@ -57,6 +58,19 @@ export default function PostComposer({ currentUser }) {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const urlbuilder = () => {
+    if (currentUser.profile_picture) {
+      setFinalUrl(
+        `${process.env.NEXT_PUBLIC_HOST_IP}${currentUser.profile_picture}`
+      );
+    }
+  };
+
+  useEffect(() => {
+    urlbuilder();
+  }, [urlbuilder]);
+
   return (
     <>
       {/* =========== COLLAPSED POST CARD =========== */}
@@ -72,11 +86,7 @@ export default function PostComposer({ currentUser }) {
         onClick={() => setOpen(true)}
       >
         <Box sx={{ display: "flex", flexDirection: "row", gap: 2, mb: 2 }}>
-          <Avatar
-            size="lg"
-            src={currentUser?.profilePic || "/default-avatar.png"}
-            sx={{ cursor: "pointer" }}
-          />
+          <Avatar size="lg" src={finalUrl} sx={{ cursor: "pointer" }} />
           <Box
             sx={{
               flex: 1,
@@ -138,6 +148,7 @@ export default function PostComposer({ currentUser }) {
         handlePost={handlePost}
         loading={loading}
         currentUser={currentUser}
+        profileUrl={finalUrl}
       />
     </>
   );

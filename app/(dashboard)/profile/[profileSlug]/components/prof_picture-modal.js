@@ -40,29 +40,60 @@ export default function ProfilePictureModal({
     setPreviewURL(imgUrl); // revert back to original
   };
 
+  // const handleSubmit = async () => {
+  //   if (!newImage) return;
+
+  //   const formData = new FormData();
+  //   formData.append("type", type);
+  //   formData.append("image", newImage);
+
+  //   try {
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_HOST_IP}/api/upload/profile_pic`,
+  //       {
+  //         method: "POST",
+  //         credentials: "include",
+  //         body: formData,
+  //       }
+  //     );
+
+  //     const data = await res.json();
+
+  //     if (data.success) {
+  //       if (onUploadComplete) {
+  //         onUploadComplete();
+  //       }
+  //       setNewImage(null);
+  //       close();
+  //     }
+  //   } catch (err) {
+  //     console.error("Upload failed:", err);
+  //   }
+  // };
+
   const handleSubmit = async () => {
     if (!newImage) return;
 
     const formData = new FormData();
-    formData.append("type", type);
     formData.append("image", newImage);
 
+    // ✓ API URL decided by type
+    const apiUrl =
+      type === "profile" ? "/api/upload/profile_pic" : "/api/upload/cover_pic";
+
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_IP}/api/upload/profile_pic`,
-        {
-          method: "POST",
-          credentials: "include",
-          body: formData,
-        }
-      );
+      const res = await fetch(`${process.env.NEXT_PUBLIC_HOST_IP}${apiUrl}`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
 
       const data = await res.json();
 
       if (data.success) {
-        if (onUploadComplete) {
-          onUploadComplete();
-        }
+        // Parent refresh
+        onUploadComplete && onUploadComplete();
+
         setNewImage(null);
         close();
       }
@@ -73,6 +104,7 @@ export default function ProfilePictureModal({
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPreviewURL(imgUrl);
     } else {
       // Cleanup when modal closes
@@ -104,10 +136,10 @@ export default function ProfilePictureModal({
             }}
           >
             {previewURL && (
-              <Image
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
                 src={previewURL}
                 alt="preview"
-                fill
                 style={{ objectFit: "contain" }}
               />
             )}

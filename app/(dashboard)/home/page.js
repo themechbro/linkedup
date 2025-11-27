@@ -1,8 +1,8 @@
 "use client";
 import { Box, Divider } from "@mui/joy";
-import ProfileHomeCard from "../components/profilecard";
-import PostFeed from "../components/postFeed";
-import PostComposer from "../components/postComposer";
+import ProfileHomeCard from "../components/profile/profilecard";
+import PostFeed from "../components/post/postFeed";
+import PostComposer from "../components/composers/postComposer";
 import LinkedupNewsCard from "../components/linkeup_news_card";
 import { useEffect, useState, useCallback } from "react";
 
@@ -72,7 +72,10 @@ export default function HomePage() {
         }}
       >
         <PostComposer
-          currentUser={{ full_name: fetchedData?.userData?.full_name }}
+          currentUser={{
+            full_name: fetchedData?.userData?.full_name,
+            profile_picture: fetchedData?.userData?.profile_picture,
+          }}
         />
         <Divider></Divider>
         <PostFeed />
