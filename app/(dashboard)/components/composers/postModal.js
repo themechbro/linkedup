@@ -35,6 +35,7 @@ export default function PostModal({
           borderRadius: "lg",
           boxShadow: "lg",
           p: 2,
+          overflowY: "auto",
         }}
       >
         <ModalClose />

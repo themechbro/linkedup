@@ -4,6 +4,8 @@ import Image from "next/image";
 import landingLogo from "@/public/assets/landingPage.png"; // Assuming this path is correct
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+export const fetchCache = "default-no-store";
+export const dynamic = "force-dynamic";
 
 export default function LinkedUpLandingPage() {
   return (

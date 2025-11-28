@@ -69,6 +69,18 @@ export default function LinkedUpSignupForm() {
                 </FormHelperText>
               ) : null}
             </FormControl>
+
+            {/* Full name */}
+            <FormControl required sx={{ mb: 2 }}>
+              <FormLabel sx={sx_formLabel}>Full Name</FormLabel>
+              <Input type="text" name="full_name" />
+              {messageError.full_name ? (
+                <FormHelperText sx={{ color: "red" }}>
+                  {messageError.full_name}
+                </FormHelperText>
+              ) : null}
+            </FormControl>
+
             {/* Password */}
             <FormControl required sx={{ mb: 2 }}>
               <FormLabel sx={sx_formLabel}>Password</FormLabel>
@@ -128,7 +140,7 @@ export default function LinkedUpSignupForm() {
           open={snackbar}
           close={() => setSnackbar(false)}
           severity={snackColor}
-          message={messageSuccess.message || messageError.server}
+          message={messageSuccess?.message || messageError.server}
         />
       ) : null}
     </>

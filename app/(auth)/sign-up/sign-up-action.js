@@ -2,6 +2,7 @@ export async function SignupAction(prevState, formData) {
   const email = formData.get("email");
   const password = formData.get("password");
   const username = formData.get("username");
+  const full_name = formData.get("full_name");
 
   let errors = {};
 
@@ -23,6 +24,10 @@ export async function SignupAction(prevState, formData) {
     errors.password = "Password must be at least 8 characters long";
   }
 
+  if (!full_name) {
+    errors.full_name = "Name is required";
+  }
+
   if (Object.keys(errors).length > 0) {
     return {
       errors,
@@ -37,7 +42,7 @@ export async function SignupAction(prevState, formData) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, username }),
+        body: JSON.stringify({ email, password, username, full_name }),
       }
     );
     const data = await response.json();
@@ -50,7 +55,7 @@ export async function SignupAction(prevState, formData) {
       };
     }
 
-    return { success: data.success, message: data.message, errors: null };
+    return { success: data, errors: null };
   } catch (error) {
     console.error("Error during Signup", error);
     return {

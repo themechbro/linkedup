@@ -9,9 +9,32 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserRoundPen, Settings, Activity, LogOut } from "lucide-react";
-
+import { useState, useEffect, useCallback } from "react";
 export default function NavDropdown() {
   const router = useRouter();
+  const [fetchedData, setFetchedData] = useState({});
+
+  const fetchUser = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_HOST_IP}/api/auth/user_details`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+      const data = await response.json();
+      setFetchedData(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchUser();
+  }, [fetchUser]);
+
   const handleLogout = async () => {
     try {
       const response = await fetch(
@@ -44,7 +67,12 @@ export default function NavDropdown() {
       <MenuButton
         slots={{ root: Avatar }}
         slotProps={{
-          root: { variant: "outlined", src: "image.com" },
+          root: {
+            variant: "outlined",
+            src: fetchedData?.userData?.profile_picture
+              ? `${process.env.NEXT_PUBLIC_HOST_IP}${fetchedData.userData.profile_picture}`
+              : "image.com",
+          },
         }}
       ></MenuButton>
       <Menu

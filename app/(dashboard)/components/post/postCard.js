@@ -27,6 +27,8 @@ import Image from "next/image";
 import CommentComposer from "../comments/comment-composer";
 import CommentList from "../comments/commentList";
 import { postMenuItems } from "./menu/items";
+import PostLikedList from "./liked-list/postliked_list";
+import { redirect } from "next/navigation";
 
 export default function PostCard({ post }) {
   const media =
@@ -40,6 +42,7 @@ export default function PostCard({ post }) {
   const [openComment, setOpenComment] = useState(false);
   const [comments, setComments] = useState(post.comments || []);
   const [newComment, setNewComment] = useState(null);
+  const [openLiked, setOpenLiked] = useState(false);
 
   const handleCommentAdded = (comment) => {
     setNewComment(comment);
@@ -94,50 +97,57 @@ export default function PostCard({ post }) {
   };
 
   return (
-    <Card variant="outlined" sx={{ borderRadius: "lg" }}>
-      <CardContent>
-        {/* User info */}
-        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
-            <Avatar
-              src={
-                post?.profile_picture
-                  ? `${process.env.NEXT_PUBLIC_HOST_IP}${post.profile_picture}`
-                  : "/default.img"
-              }
-            />
-            <Box>
-              <Typography level="title-md">{post.full_name}</Typography>
-              <Typography level="body-sm" color="neutral">
-                @{post.username} ·{" "}
-                {new Date(post.created_at).toLocaleString("en-IN", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  day: "2-digit",
-                  month: "short",
-                })}
-              </Typography>
+    <>
+      <Card variant="outlined" sx={{ borderRadius: "lg" }}>
+        <CardContent>
+          {/* User info */}
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+              <Avatar
+                src={
+                  post?.profile_picture
+                    ? `${process.env.NEXT_PUBLIC_HOST_IP}${post.profile_picture}`
+                    : "/default.img"
+                }
+              />
+              <Box>
+                <Typography
+                  level="title-md"
+                  onClick={() => redirect(`/profile/${post.owner}`)}
+                  sx={{ cursor: "pointer" }}
+                >
+                  {post.full_name}
+                </Typography>
+                <Typography level="body-sm" color="neutral">
+                  @{post.username} ·{" "}
+                  {new Date(post.created_at).toLocaleString("en-IN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    day: "2-digit",
+                    month: "short",
+                  })}
+                </Typography>
+              </Box>
             </Box>
-          </Box>
 
-          <Box className="post-menu">
-            {post.current_user !== post.owner ? (
-              <Button
-                variant="plain"
-                sx={{ fontFamily: "Roboto Condensed" }}
-                startDecorator={<Plus />}
-              >
-                Connect
-              </Button>
-            ) : null}
-            <Dropdown>
-              <MenuButton
-                slots={{ root: IconButton }}
-                slotProps={{ root: { variant: "plain", color: "neutral" } }}
-              >
-                <EllipsisVertical />
-              </MenuButton>
-              {/* <Menu>
+            <Box className="post-menu">
+              {post.current_user !== post.owner ? (
+                <Button
+                  variant="plain"
+                  sx={{ fontFamily: "Roboto Condensed" }}
+                  startDecorator={<Plus />}
+                >
+                  Connect
+                </Button>
+              ) : null}
+              <Dropdown>
+                <MenuButton
+                  slots={{ root: IconButton }}
+                  slotProps={{ root: { variant: "plain", color: "neutral" } }}
+                >
+                  <EllipsisVertical />
+                </MenuButton>
+                {/* <Menu>
                 {postMenuItems.map((item, index) => {
                   return (
                     <MenuItem
@@ -150,180 +160,193 @@ export default function PostCard({ post }) {
                   );
                 })}
               </Menu> */}
-              <Menu>
-                {postMenuItems
-                  .filter((item) => {
-                    // Only show Delete Post if current user owns the post
-                    if (item.name === "Delete Post") {
-                      return post.current_user === post.owner;
-                    }
-                    if (item.name == "Not Interested") {
-                      return post.current_user !== post.owner;
-                    }
-                    if (item.name == "Report Post") {
-                      return post.current_user !== post.owner;
-                    }
-                    if (item.name == "Edit Post") {
-                      return post.current_user === post.owner;
-                    }
-                    return true; // show all other items always
-                  })
-                  .map((item, index) => (
-                    <MenuItem
-                      key={index}
-                      sx={{ fontFamily: "Roboto Condensed" }}
-                    >
-                      <ListItemDecorator>{item.icon}</ListItemDecorator>
-                      {item.name}
-                    </MenuItem>
-                  ))}
-              </Menu>
-            </Dropdown>
+                <Menu>
+                  {postMenuItems
+                    .filter((item) => {
+                      // Only show Delete Post if current user owns the post
+                      if (item.name === "Delete Post") {
+                        return post.current_user === post.owner;
+                      }
+                      if (item.name == "Not Interested") {
+                        return post.current_user !== post.owner;
+                      }
+                      if (item.name == "Report Post") {
+                        return post.current_user !== post.owner;
+                      }
+                      if (item.name == "Edit Post") {
+                        return post.current_user === post.owner;
+                      }
+                      return true; // show all other items always
+                    })
+                    .map((item, index) => (
+                      <MenuItem
+                        key={index}
+                        sx={{ fontFamily: "Roboto Condensed" }}
+                      >
+                        <ListItemDecorator>{item.icon}</ListItemDecorator>
+                        {item.name}
+                      </MenuItem>
+                    ))}
+                </Menu>
+              </Dropdown>
+            </Box>
           </Box>
-        </Box>
 
-        {/* Content */}
-        <Typography level="body-md" sx={{ mb: 2, whiteSpace: "pre-wrap" }}>
-          {renderContentWithHashtags(post.content)}
-        </Typography>
+          {/* Content */}
+          <Typography level="body-md" sx={{ mb: 2, whiteSpace: "pre-wrap" }}>
+            {renderContentWithHashtags(post.content)}
+          </Typography>
 
-        {/* Media */}
-        {media.length > 0 && (
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-            {media.map((m, i) =>
-              m.type === "videos" ? (
-                <Box
-                  key={i}
-                  sx={{
-                    position: "relative",
-                    width: "100%",
-                    aspectRatio: "16 / 9",
-                    mt: "10px",
-                    borderRadius: "lg",
-                    overflow: "hidden",
-                    bgcolor: "black",
-                  }}
-                >
-                  <video
-                    src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
-                    controls
-                    style={{
+          {/* Media */}
+          {media.length > 0 && (
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+              {media.map((m, i) =>
+                m.type === "videos" ? (
+                  <Box
+                    key={i}
+                    sx={{
+                      position: "relative",
                       width: "100%",
-                      height: "100%",
-                      objectFit: "contain",
+                      aspectRatio: "16 / 9",
+                      mt: "10px",
+                      borderRadius: "lg",
+                      overflow: "hidden",
+                      bgcolor: "black",
                     }}
-                  />
-                </Box>
-              ) : (
-                <Box
-                  key={i}
-                  sx={{
-                    position: "relative",
-                    width: "100%",
-                    aspectRatio: "16 / 9", // Or another ratio that fits your images
-                    mt: "10px",
-                    borderRadius: "lg",
-                    overflow: "hidden",
-                  }}
+                  >
+                    <video
+                      src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                      controls
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                      }}
+                    />
+                  </Box>
+                ) : (
+                  <Box
+                    key={i}
+                    sx={{
+                      position: "relative",
+                      width: "100%",
+                      aspectRatio: "16 / 9", // Or another ratio that fits your images
+                      mt: "10px",
+                      borderRadius: "lg",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <Image
+                      src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                      alt="post media"
+                      fill
+                      sizes="100vw"
+                      unoptimized
+                    />
+                  </Box>
+                )
+              )}
+            </Box>
+          )}
+
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            {likes > 0 && (
+              <Box className="counts">
+                <Typography
+                  level="body-sm"
+                  color="neutral"
+                  onClick={() => setOpenLiked((prev) => !prev)}
+                  sx={{ textDecoration: "underline", cursor: "pointer" }}
                 >
-                  <Image
-                    src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
-                    alt="post media"
-                    fill
-                    sizes="100vw"
-                    unoptimized
-                  />
-                </Box>
-              )
+                  {(() => {
+                    if (liked) {
+                      if (likes === 1) {
+                        return "You liked this";
+                      }
+                      const otherLikes = likes - 1;
+                      return `You and ${otherLikes} other${
+                        otherLikes > 1 ? "s" : ""
+                      } liked this`;
+                    }
+                    return `${likes} like${likes > 1 ? "s" : ""}`;
+                  })()}
+                </Typography>
+              </Box>
+            )}
+            {post.comment_count > 0 && (
+              <Box className="comment-counts">
+                <Typography
+                  level="body-sm"
+                  color="neutral"
+                  onClick={() => setOpenComment(true)}
+                  sx={{ cursor: "pointer", textDecoration: "underline" }}
+                >
+                  {post.comment_count} comments
+                </Typography>
+              </Box>
             )}
           </Box>
-        )}
 
-        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          {likes > 0 && (
-            <Box className="counts">
-              <Typography level="body-sm" color="neutral">
-                {(() => {
-                  if (liked) {
-                    if (likes === 1) {
-                      return "You liked this";
-                    }
-                    const otherLikes = likes - 1;
-                    return `You and ${otherLikes} other${
-                      otherLikes > 1 ? "s" : ""
-                    } liked this`;
-                  }
-                  return `${likes} like${likes > 1 ? "s" : ""}`;
-                })()}
-              </Typography>
-            </Box>
-          )}
-          {post.comment_count > 0 && (
-            <Box className="comment-counts">
-              <Typography
-                level="body-sm"
-                color="neutral"
-                onClick={() => setOpenComment((prev) => !prev)}
-                sx={{ cursor: "pointer", textDecoration: "underline" }}
-              >
-                {post.comment_count} comments
-              </Typography>
-            </Box>
-          )}
-        </Box>
-
-        <Divider />
-        <Box
-          className="call_to_action"
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "column", md: "row" },
-            gap: 2,
-            mt: 2,
-            flexShrink: 1,
-          }}
-        >
-          <Button
-            size="sm"
-            variant="plain"
-            color={liked ? "primary" : "neutral"}
-            startDecorator={<ThumbsUp size={16} />}
-            onClick={handleLike}
+          <Divider />
+          <Box
+            className="call_to_action"
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "column", md: "row" },
+              gap: 2,
+              mt: 2,
+              flexShrink: 1,
+            }}
           >
-            {liked ? "Liked" : "Like"}
-          </Button>
+            <Button
+              size="sm"
+              variant="plain"
+              color={liked ? "primary" : "neutral"}
+              startDecorator={<ThumbsUp size={16} />}
+              onClick={handleLike}
+            >
+              {liked ? "Liked" : "Like"}
+            </Button>
 
-          <Button
-            startDecorator={<MessageCircleMore />}
-            variant="plain"
-            color="neutral"
-            onClick={() => setOpenComment((prev) => !prev)}
-          >
-            Comment
-          </Button>
-          <Button startDecorator={<Repeat />} variant="plain" color="neutral">
-            Repost
-          </Button>
-          <Button startDecorator={<Send />} variant="plain" color="neutral">
-            Share
-          </Button>
-        </Box>
-
-        {openComment && (
-          <Box>
-            <Divider sx={{ mt: 1, mb: 1 }} />
-
-            {/* CommentComposer comes first */}
-            <CommentComposer
-              post_id={post.id}
-              onCommentAdded={handleCommentAdded}
-            />
-
-            {/* Then the list — it listens for changes in newComment */}
-            <CommentList post_id={post.id} newComment={newComment} />
+            <Button
+              startDecorator={<MessageCircleMore />}
+              variant="plain"
+              color="neutral"
+              onClick={() => setOpenComment((prev) => !prev)}
+            >
+              Comment
+            </Button>
+            <Button startDecorator={<Repeat />} variant="plain" color="neutral">
+              Repost
+            </Button>
+            <Button startDecorator={<Send />} variant="plain" color="neutral">
+              Share
+            </Button>
           </Box>
-        )}
-      </CardContent>
-    </Card>
+
+          {openComment && (
+            <Box>
+              <Divider sx={{ mt: 1, mb: 1 }} />
+
+              {/* CommentComposer comes first */}
+              <CommentComposer
+                post_id={post.id}
+                onCommentAdded={handleCommentAdded}
+              />
+
+              {/* Then the list — it listens for changes in newComment */}
+              <CommentList post_id={post.id} newComment={newComment} />
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Liked List Modal */}
+      <PostLikedList
+        open={openLiked}
+        close={() => setOpenLiked(false)}
+        post_id={post.id}
+      />
+    </>
   );
 }
