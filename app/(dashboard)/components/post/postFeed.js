@@ -196,7 +196,16 @@ export default function PostFeed() {
             </div>
           );
         }
-        return <PostCard key={post.id} post={post} />;
+        return (
+          <PostCard
+            key={post.id}
+            post={post}
+            loadingIni={loadingInitial}
+            onPostDeleted={(id) => {
+              setPosts((prev) => prev.filter((p) => p.id !== id));
+            }}
+          />
+        );
       })}
 
       {loadingMore && (

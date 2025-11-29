@@ -13,6 +13,8 @@ import {
   MenuButton,
   MenuItem,
   ListItemDecorator,
+  Skeleton,
+  Snackbar,
 } from "@mui/joy";
 import {
   ThumbsUp,
@@ -29,8 +31,9 @@ import CommentList from "../comments/commentList";
 import { postMenuItems } from "./menu/items";
 import PostLikedList from "./liked-list/postliked_list";
 import { redirect } from "next/navigation";
+import { deletePost } from "./lib/helpers";
 
-export default function PostCard({ post }) {
+export default function PostCard({ post, loadingIni, onPostDeleted }) {
   const media =
     typeof post.media_url === "string"
       ? JSON.parse(post.media_url)
@@ -43,7 +46,11 @@ export default function PostCard({ post }) {
   const [comments, setComments] = useState(post.comments || []);
   const [newComment, setNewComment] = useState(null);
   const [openLiked, setOpenLiked] = useState(false);
-
+  const [snack, setSnack] = useState({
+    open: false,
+    message: "",
+    color: "success",
+  });
   const handleCommentAdded = (comment) => {
     setNewComment(comment);
   };
@@ -94,6 +101,111 @@ export default function PostCard({ post }) {
       // This part is regular text.
       return part;
     });
+  };
+
+  if (loadingIni) {
+    return (
+      <Card variant="outlined" sx={{ borderRadius: "lg" }}>
+        <CardContent>
+          {/* USER HEADER */}
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            {/* Left side (avatar + name) */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+              <Skeleton
+                variant="circular"
+                width={46}
+                height={46}
+                animation="wave"
+              />
+
+              <Box>
+                <Skeleton variant="text" width={140} sx={{ mb: 0.5 }} />
+                <Skeleton variant="text" width={180} sx={{ mb: 0.5 }} />
+              </Box>
+            </Box>
+
+            {/* Right Menu Button Skeleton */}
+            <Skeleton
+              variant="rectangular"
+              width={35}
+              height={35}
+              sx={{ borderRadius: "50%" }}
+            />
+          </Box>
+
+          {/* POST CONTENT */}
+          <Skeleton variant="text" sx={{ mb: 1 }} width="90%" />
+          <Skeleton variant="text" sx={{ mb: 1 }} width="80%" />
+          <Skeleton variant="text" sx={{ mb: 2 }} width="60%" />
+
+          {/* MEDIA (IF ANY) */}
+          <Skeleton
+            variant="rectangular"
+            width="100%"
+            height={250}
+            animation="wave"
+            sx={{ borderRadius: "lg", my: 2 }}
+          />
+
+          {/* LIKE + COMMENT COUNTS */}
+          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+            <Skeleton variant="text" width={120} />
+            <Skeleton variant="text" width={80} />
+          </Box>
+
+          <Divider />
+
+          {/* CTA BUTTONS */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "column", md: "row" },
+              gap: 2,
+              mt: 2,
+            }}
+          >
+            <Skeleton variant="rectangular" width={80} height={32} />
+            <Skeleton variant="rectangular" width={100} height={32} />
+            <Skeleton variant="rectangular" width={90} height={32} />
+            <Skeleton variant="rectangular" width={85} height={32} />
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const handleMenuClick = async (action) => {
+    if (action === "Delete Post") {
+      const result = await deletePost(post.id, post.current_user);
+
+      if (result.success) {
+        onPostDeleted(post.id);
+        setSnack({
+          open: true,
+          message: "Post deleted successfully",
+          color: "success",
+        });
+      } else {
+        alert(result.error || "Failed to delete post");
+        setSnack({
+          open: true,
+          message: result.error || "Failed to delete post",
+          color: "danger",
+        });
+      }
+    }
+
+    if (action === "Edit Post") {
+      // open edit modal
+    }
+
+    if (action === "Report Post") {
+      // open report modal
+    }
+
+    if (action === "Not Interested") {
+      // hide post from feed
+    }
   };
 
   return (
@@ -182,6 +294,7 @@ export default function PostCard({ post }) {
                       <MenuItem
                         key={index}
                         sx={{ fontFamily: "Roboto Condensed" }}
+                        onClick={() => handleMenuClick(item.name)}
                       >
                         <ListItemDecorator>{item.icon}</ListItemDecorator>
                         {item.name}
@@ -347,6 +460,18 @@ export default function PostCard({ post }) {
         close={() => setOpenLiked(false)}
         post_id={post.id}
       />
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snack.open}
+        color={snack.color}
+        onClose={() => setSnack({ ...snack, open: false })}
+        autoHideDuration={2000}
+        sx={{ fontFamily: "Roboto Condensed" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        {snack.message}
+      </Snackbar>
     </>
   );
 }
