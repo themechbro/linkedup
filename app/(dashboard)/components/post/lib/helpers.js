@@ -25,3 +25,5 @@ export const deletePost = async (post_id, current_user) => {
     return { success: false, error: error.message };
   }
 };
+
+// lib/helpers.js

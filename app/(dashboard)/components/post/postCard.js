@@ -32,6 +32,7 @@ import { postMenuItems } from "./menu/items";
 import PostLikedList from "./liked-list/postliked_list";
 import { redirect } from "next/navigation";
 import { deletePost } from "./lib/helpers";
+import EditPostModal from "./modals/editpostModal";
 
 export default function PostCard({ post, loadingIni, onPostDeleted }) {
   const media =
@@ -46,6 +47,7 @@ export default function PostCard({ post, loadingIni, onPostDeleted }) {
   const [comments, setComments] = useState(post.comments || []);
   const [newComment, setNewComment] = useState(null);
   const [openLiked, setOpenLiked] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
   const [snack, setSnack] = useState({
     open: false,
     message: "",
@@ -196,7 +198,7 @@ export default function PostCard({ post, loadingIni, onPostDeleted }) {
     }
 
     if (action === "Edit Post") {
-      // open edit modal
+      setOpenEdit(true);
     }
 
     if (action === "Report Post") {
@@ -472,6 +474,13 @@ export default function PostCard({ post, loadingIni, onPostDeleted }) {
       >
         {snack.message}
       </Snackbar>
+
+      {/* Edit Post Modal */}
+      <EditPostModal
+        openEdit={openEdit}
+        closeEdit={() => setOpenEdit(false)}
+        post={post}
+      />
     </>
   );
 }
