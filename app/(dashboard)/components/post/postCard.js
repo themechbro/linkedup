@@ -31,7 +31,7 @@ import CommentList from "../comments/commentList";
 import { postMenuItems } from "./menu/items";
 import PostLikedList from "./liked-list/postliked_list";
 import { redirect } from "next/navigation";
-import { deletePost } from "./lib/helpers";
+import { deletePost, repostPost } from "./lib/helpers";
 import EditPostModal from "./modals/editpostModal";
 
 export default function PostCard({ post, loadingIni, onPostDeleted }) {
@@ -210,10 +210,47 @@ export default function PostCard({ post, loadingIni, onPostDeleted }) {
     }
   };
 
+  async function handleRepost() {
+    const result = await repostPost(post.id, post.current_user);
+
+    if (result.success) {
+      alert("Reposted this Post");
+    } else {
+      alert(result.message || "Failed to repost");
+    }
+  }
+
+  const originalMedia =
+    post.original_post && typeof post.original_post.media_url === "string"
+      ? JSON.parse(post.original_post.media_url)
+      : post.original_post?.media_url || [];
+
   return (
     <>
       <Card variant="outlined" sx={{ borderRadius: "lg" }}>
         <CardContent>
+          {/* 🔄 REPOST HEADER */}
+          {post.repost_of && post.original_post && (
+            <Box
+              sx={{
+                mb: 1,
+                p: 1,
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                color: "neutral.600",
+                fontFamily: "Roboto Condensed",
+              }}
+            >
+              <Repeat size={16} />
+              <Typography level="body-sm">
+                {post.owner == post.original_post.owner
+                  ? `${post.full_name} reposted there own post`
+                  : `${post.full_name} reposted ${post.original_post.full_name}'s post`}
+              </Typography>
+            </Box>
+          )}
+
           {/* User info */}
           <Box sx={{ display: "flex", justifyContent: "space-between" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
@@ -311,6 +348,78 @@ export default function PostCard({ post, loadingIni, onPostDeleted }) {
           <Typography level="body-md" sx={{ mb: 2, whiteSpace: "pre-wrap" }}>
             {renderContentWithHashtags(post.content)}
           </Typography>
+
+          {/* 🔄 ORIGINAL POST CONTENT (inside repost) */}
+          {post.repost_of && post.original_post && (
+            <Card
+              variant="soft"
+              sx={{
+                borderRadius: "lg",
+                backgroundColor: "neutral.softBg",
+                p: 2,
+                my: 2,
+              }}
+            >
+              {/* Original Post Header */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Avatar
+                  src={
+                    post.original_post.profile_picture
+                      ? `${process.env.NEXT_PUBLIC_HOST_IP}${post.original_post.profile_picture}`
+                      : "/default.img"
+                  }
+                />
+                <Box>
+                  <Typography level="title-sm">
+                    {post.original_post.full_name}
+                  </Typography>
+                  <Typography level="body-xs" color="neutral">
+                    @{post.original_post.username} ·{" "}
+                    {new Date(post.original_post.created_at).toLocaleString(
+                      "en-IN",
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "2-digit",
+                        month: "short",
+                      }
+                    )}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* Original Post Content */}
+              <Typography
+                level="body-sm"
+                sx={{ mt: 1, whiteSpace: "pre-wrap" }}
+              >
+                {renderContentWithHashtags(post.original_post.content)}
+              </Typography>
+
+              {/* Original Post Media */}
+              {originalMedia.length > 0 && (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
+                  {originalMedia.map((m, i) =>
+                    m.type === "videos" ? (
+                      <video
+                        key={i}
+                        src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                        controls
+                        style={{ width: "100%", borderRadius: "8px" }}
+                      />
+                    ) : (
+                      <img
+                        key={i}
+                        src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                        alt="post media"
+                        style={{ borderRadius: "8px", width: "100%" }}
+                      />
+                    )
+                  )}
+                </Box>
+              )}
+            </Card>
+          )}
 
           {/* Media */}
           {media.length > 0 && (
@@ -431,7 +540,12 @@ export default function PostCard({ post, loadingIni, onPostDeleted }) {
             >
               Comment
             </Button>
-            <Button startDecorator={<Repeat />} variant="plain" color="neutral">
+            <Button
+              startDecorator={<Repeat />}
+              variant="plain"
+              color="neutral"
+              onClick={handleRepost}
+            >
               Repost
             </Button>
             <Button startDecorator={<Send />} variant="plain" color="neutral">

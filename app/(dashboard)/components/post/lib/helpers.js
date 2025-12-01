@@ -26,4 +26,40 @@ export const deletePost = async (post_id, current_user) => {
   }
 };
 
-// lib/helpers.js
+// Repost
+export async function repostPost(postId, userId) {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts/${postId}/repost`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data.message || "Repost failed",
+      };
+    }
+
+    return {
+      success: true,
+      message: data.message || "Reposted!",
+      repostId: data.repost_id,
+    };
+  } catch (err) {
+    console.error("Repost error:", err);
+    return {
+      success: false,
+      message: "Network error. Try again.",
+    };
+  }
+}
