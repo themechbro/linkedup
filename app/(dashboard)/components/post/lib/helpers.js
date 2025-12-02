@@ -63,3 +63,88 @@ export async function repostPost(postId, userId) {
     };
   }
 }
+
+// connection request
+export async function sendConnectionRequest(receiverId) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/request`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receiver_id: receiverId }),
+    }
+  );
+  return await res.json();
+}
+
+// Accept Connection
+export async function acceptConnection(otherUserId) {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/accept`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sender_id: otherUserId }), // The user who sent request
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return { success: false, message: data.message || "Failed to accept" };
+    }
+
+    return {
+      success: true,
+      message: data.message || "Connection accepted",
+    };
+  } catch (err) {
+    console.error("Accept connection error:", err);
+    return {
+      success: false,
+      message: "Network error",
+    };
+  }
+}
+
+// Reject Connections
+export async function rejectConnection(otherUserId) {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/reject`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sender_id: otherUserId }), // The user who sent request
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data.message || "Failed to reject request",
+      };
+    }
+
+    return {
+      success: true,
+      message: data.message || "Request rejected",
+    };
+  } catch (err) {
+    console.error("Reject connection error:", err);
+    return {
+      success: false,
+      message: "Network error",
+    };
+  }
+}

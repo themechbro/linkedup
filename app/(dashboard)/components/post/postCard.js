@@ -15,6 +15,7 @@ import {
   ListItemDecorator,
   Skeleton,
   Snackbar,
+  Tooltip,
 } from "@mui/joy";
 import {
   ThumbsUp,
@@ -23,6 +24,8 @@ import {
   Repeat,
   EllipsisVertical,
   Plus,
+  Check,
+  X,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -31,8 +34,15 @@ import CommentList from "../comments/commentList";
 import { postMenuItems } from "./menu/items";
 import PostLikedList from "./liked-list/postliked_list";
 import { redirect } from "next/navigation";
-import { deletePost, repostPost } from "./lib/helpers";
+import {
+  deletePost,
+  repostPost,
+  sendConnectionRequest,
+  acceptConnection,
+  rejectConnection,
+} from "./lib/helpers";
 import EditPostModal from "./modals/editpostModal";
+import ConnectionButtons from "./connection/buttons";
 
 export default function PostCard({ post, loadingIni, onPostDeleted }) {
   const media =
@@ -53,6 +63,9 @@ export default function PostCard({ post, loadingIni, onPostDeleted }) {
     message: "",
     color: "success",
   });
+
+  const [localStatus, setLocalStatus] = useState(post.connection_status);
+
   const handleCommentAdded = (comment) => {
     setNewComment(comment);
   };
@@ -225,6 +238,23 @@ export default function PostCard({ post, loadingIni, onPostDeleted }) {
       ? JSON.parse(post.original_post.media_url)
       : post.original_post?.media_url || [];
 
+  async function handleConnect() {
+    const res = await sendConnectionRequest(post.owner);
+    if (res.success) {
+      setLocalConnectionStatus("pending"); // instantly update UI
+    }
+  }
+
+  const handleAccept = async (id) => {
+    const res = await acceptConnection(id);
+    if (res.success) setLocalStatus("connected");
+  };
+
+  const handleReject = async (id) => {
+    const res = await rejectConnection(id);
+    if (res.success) setLocalStatus("not_connected");
+  };
+
   return (
     <>
       <Card variant="outlined" sx={{ borderRadius: "lg" }}>
@@ -281,16 +311,64 @@ export default function PostCard({ post, loadingIni, onPostDeleted }) {
               </Box>
             </Box>
 
-            <Box className="post-menu">
-              {post.current_user !== post.owner ? (
+            <Box className="post-menu" sx={{ display: "flex", gap: 2 }}>
+              {/* {post.current_user !== post.owner ? (
                 <Button
                   variant="plain"
                   sx={{ fontFamily: "Roboto Condensed" }}
                   startDecorator={<Plus />}
+                  onClick={sendConnectionRequest(post.owner)}
                 >
                   Connect
                 </Button>
-              ) : null}
+              ) : null} */}
+
+              {/* Connection Buttons */}
+
+              {/* {post.owner !== post.current_user && (
+                <>
+                  {localStatus === "not_connected" && (
+                    <Button onClick={handleConnect}>Connect</Button>
+                  )}
+
+                  {localStatus === "pending" && (
+                    <Button disabled>Pending...</Button>
+                  )}
+
+                  {post.connection_status === "incoming_request" && (
+                    <Box>
+                      <Tooltip title="Accept Request">
+                        <Button
+                          sx={{ mr: 3 }}
+                          onClick={() => acceptConnection(post.owner)}
+                          startDecorator={<Check />}
+                        ></Button>
+                      </Tooltip>
+                      <Tooltip title="Reject Request">
+                        <Button
+                          onClick={() => rejectConnection(post.owner)}
+                          startDecorator={<X />}
+                        ></Button>
+                      </Tooltip>
+                    </Box>
+                  )}
+
+                  {post.connection_status === "connected" && (
+                    <Button disabled variant="plain">
+                      Connected
+                    </Button>
+                  )}
+                </>
+              )} */}
+
+              <ConnectionButtons
+                post={post}
+                handleConnect={handleConnect}
+                localStatus={localStatus}
+                acceptConnection={handleAccept}
+                rejectConnection={handleReject}
+              />
+              {/* Dropdown Menu */}
               <Dropdown>
                 <MenuButton
                   slots={{ root: IconButton }}
