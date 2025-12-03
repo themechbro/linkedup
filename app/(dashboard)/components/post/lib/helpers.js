@@ -65,86 +65,164 @@ export async function repostPost(postId, userId) {
 }
 
 // connection request
-export async function sendConnectionRequest(receiverId) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/request`,
-    {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ receiver_id: receiverId }),
-    }
-  );
-  return await res.json();
+// export async function sendConnectionRequest(receiverId) {
+//   const res = await fetch(
+//     `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/request`,
+//     {
+//       method: "POST",
+//       credentials: "include",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({ receiver_id: receiverId }),
+//     }
+//   );
+//   return await res.json();
+// }
+
+export async function sendConnectionRequest(receiver_id) {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/request`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ receiver_id }),
+      }
+    );
+
+    const data = await res.json();
+
+    // 👇 Return consistent format
+    return {
+      ok: res.ok,
+      success: res.ok, // ✅ Add this
+      message: data.message,
+    };
+  } catch (err) {
+    console.error("Send connection request error:", err);
+    return {
+      ok: false,
+      success: false,
+      message: "Failed to send request",
+    };
+  }
 }
 
 // Accept Connection
-export async function acceptConnection(otherUserId) {
+// export async function acceptConnection(otherUserId) {
+//   try {
+//     const res = await fetch(
+//       `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/accept`,
+//       {
+//         method: "POST",
+//         credentials: "include",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({ sender_id: otherUserId }), // The user who sent request
+//       }
+//     );
+
+//     const data = await res.json();
+
+//     if (!res.ok) {
+//       return { success: false, message: data.message || "Failed to accept" };
+//     }
+
+//     return {
+//       success: true,
+//       message: data.message || "Connection accepted",
+//     };
+//   } catch (err) {
+//     console.error("Accept connection error:", err);
+//     return {
+//       success: false,
+//       message: "Network error",
+//     };
+//   }
+// }
+
+export async function acceptConnection(sender_id) {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/accept`,
       {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ sender_id: otherUserId }), // The user who sent request
+        body: JSON.stringify({ sender_id }),
       }
     );
 
     const data = await res.json();
 
-    if (!res.ok) {
-      return { success: false, message: data.message || "Failed to accept" };
-    }
-
     return {
-      success: true,
-      message: data.message || "Connection accepted",
+      ok: res.ok,
+      success: res.ok, // ✅ Add this
+      message: data.message,
     };
   } catch (err) {
-    console.error("Accept connection error:", err);
-    return {
-      success: false,
-      message: "Network error",
-    };
+    return { ok: false, success: false, message: "Failed to accept" };
   }
 }
 
 // Reject Connections
-export async function rejectConnection(otherUserId) {
+// export async function rejectConnection(otherUserId) {
+//   try {
+//     const res = await fetch(
+//       `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/reject`,
+//       {
+//         method: "POST",
+//         credentials: "include",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({ sender_id: otherUserId }), // The user who sent request
+//       }
+//     );
+
+//     const data = await res.json();
+
+//     if (!res.ok) {
+//       return {
+//         success: false,
+//         message: data.message || "Failed to reject request",
+//       };
+//     }
+
+//     return {
+//       success: true,
+//       message: data.message || "Request rejected",
+//     };
+//   } catch (err) {
+//     console.error("Reject connection error:", err);
+//     return {
+//       success: false,
+//       message: "Network error",
+//     };
+//   }
+// }
+
+export async function rejectConnection(sender_id) {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/reject`,
       {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ sender_id: otherUserId }), // The user who sent request
+        body: JSON.stringify({ sender_id }),
       }
     );
 
     const data = await res.json();
 
-    if (!res.ok) {
-      return {
-        success: false,
-        message: data.message || "Failed to reject request",
-      };
-    }
-
     return {
-      success: true,
-      message: data.message || "Request rejected",
+      ok: res.ok,
+      success: res.ok, // ✅ Add this
+      message: data.message,
     };
   } catch (err) {
-    console.error("Reject connection error:", err);
-    return {
-      success: false,
-      message: "Network error",
-    };
+    return { ok: false, success: false, message: "Failed to reject" };
   }
 }

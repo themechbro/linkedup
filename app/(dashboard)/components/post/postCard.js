@@ -64,7 +64,10 @@ export default function PostCard({ post, loadingIni, onPostDeleted }) {
     color: "success",
   });
 
-  const [localStatus, setLocalStatus] = useState(post.connection_status);
+  const [localStatus, setLocalStatus] = useState(
+    post.connection_status || "not_connected"
+  );
+  const [connLoading, setConnLoading] = useState(false);
 
   const handleCommentAdded = (comment) => {
     setNewComment(comment);
@@ -238,21 +241,86 @@ export default function PostCard({ post, loadingIni, onPostDeleted }) {
       ? JSON.parse(post.original_post.media_url)
       : post.original_post?.media_url || [];
 
-  async function handleConnect() {
-    const res = await sendConnectionRequest(post.owner);
-    if (res.success) {
-      setLocalConnectionStatus("pending"); // instantly update UI
-    }
-  }
+  // async function handleConnect() {
+  //   const res = await sendConnectionRequest(post.owner);
+  //   if (res.success) {
+  //     setLocalStatus("pending"); // instantly update UI
+  //   }
+  // }
 
-  const handleAccept = async (id) => {
-    const res = await acceptConnection(id);
-    if (res.success) setLocalStatus("connected");
+  // const handleAccept = async (id) => {
+  //   const res = await acceptConnection(id);
+  //   if (res.success) setLocalStatus("connected");
+  // };
+
+  // const handleReject = async (id) => {
+  //   const res = await rejectConnection(id);
+  //   if (res.success) setLocalStatus("not_connected");
+  // };
+
+  const handleConnect = async () => {
+    if (connLoading) return;
+    setConnLoading(true);
+
+    setLocalStatus("pending");
+
+    try {
+      const res = await sendConnectionRequest(post.owner);
+
+      // 👇 Change this check
+      if (res.ok) {
+        // Instead of: res.ok && res.success
+        setLocalStatus("pending");
+      } else {
+        setLocalStatus(post.connection_status || "not_connected");
+        console.error("Connect failed:", res.message);
+      }
+    } catch (err) {
+      console.error("Connect error:", err);
+      setLocalStatus(post.connection_status || "not_connected");
+    } finally {
+      setConnLoading(false);
+    }
+  };
+  // accept a request (the other user was sender)
+  const handleAccept = async (senderId) => {
+    if (connLoading) return;
+    setConnLoading(true);
+
+    try {
+      const res = await acceptConnection(senderId);
+      if (res.ok && res.success) {
+        setLocalStatus("connected");
+        // 👇 UPDATE THE POST IN PARENT
+        if (onConnectionStatusChanged) {
+          onConnectionStatusChanged(post.id, "connected");
+        }
+      }
+    } catch (err) {
+      console.error("Accept error:", err);
+    } finally {
+      setConnLoading(false);
+    }
   };
 
-  const handleReject = async (id) => {
-    const res = await rejectConnection(id);
-    if (res.success) setLocalStatus("not_connected");
+  // reject a request
+  const handleReject = async (senderId) => {
+    if (connLoading) return;
+    setConnLoading(true);
+
+    try {
+      const res = await rejectConnection(senderId);
+      if (res.ok && res.success) {
+        setLocalStatus("not_connected");
+        // 👇 DON'T trigger any parent updates that might cause scroll
+      } else {
+        console.error("Reject failed:", res.message);
+      }
+    } catch (err) {
+      console.error("Reject error:", err);
+    } finally {
+      setConnLoading(false);
+    }
   };
 
   return (

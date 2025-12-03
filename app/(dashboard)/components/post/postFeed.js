@@ -248,8 +248,58 @@ export default function PostFeed() {
   // -------------------------------------------------------
   // Fetch posts
   // -------------------------------------------------------
+  // const fetchPosts = async (offset) => {
+  //   if (isFetchingRef.current) return;
+  //   isFetchingRef.current = true;
+
+  //   if (offset === 0) setLoadingInitial(true);
+  //   else setLoadingMore(true);
+
+  //   try {
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts?limit=${LIMIT}&offset=${offset}`,
+  //       {
+  //         credentials: "include",
+  //         cache: "no-store",
+  //       }
+  //     );
+
+  //     if (!res.ok) throw new Error("Failed to fetch posts");
+
+  //     const data = await res.json();
+
+  //     // 🔥 Deduplicate (safety net)
+  //     setPosts((prev) => {
+  //       const idSet = new Set(prev.map((p) => p.id));
+  //       const uniqueNew = data.filter((p) => !idSet.has(p.id));
+
+  //       return offset === 0 ? data : [...prev, ...uniqueNew];
+  //     });
+
+  //     if (data.length < LIMIT) {
+  //       setHasMore(false);
+  //     }
+  //   } catch (err) {
+  //     console.error("Error fetching posts:", err);
+  //     setHasMore(false);
+  //   } finally {
+  //     isFetchingRef.current = false;
+  //     if (offset === 0) setLoadingInitial(false);
+  //     else setLoadingMore(false);
+  //   }
+  // };
+
   const fetchPosts = async (offset) => {
-    if (isFetchingRef.current) return;
+    console.log(
+      "🔍 Fetch triggered - Offset:",
+      offset,
+      "Current posts:",
+      posts.length
+    ); // 👈 ADD THIS
+    if (isFetchingRef.current) {
+      console.log("⚠️ Already fetching, skipping...");
+      return;
+    }
     isFetchingRef.current = true;
 
     if (offset === 0) setLoadingInitial(true);
@@ -268,12 +318,21 @@ export default function PostFeed() {
 
       const data = await res.json();
 
-      // 🔥 Deduplicate (safety net)
       setPosts((prev) => {
-        const idSet = new Set(prev.map((p) => p.id));
-        const uniqueNew = data.filter((p) => !idSet.has(p.id));
+        if (offset === 0) {
+          return data; // Fresh load, replace everything
+        }
 
-        return offset === 0 ? data : [...prev, ...uniqueNew];
+        // 👇 IMPROVED DEDUPLICATION
+        const existingIds = new Set(prev.map((p) => p.id));
+        const uniqueNew = data.filter((p) => !existingIds.has(p.id));
+
+        // 👇 ALSO CHECK: if NO new unique posts, don't add anything
+        if (uniqueNew.length === 0) {
+          return prev;
+        }
+
+        return [...prev, ...uniqueNew];
       });
 
       if (data.length < LIMIT) {
@@ -297,6 +356,36 @@ export default function PostFeed() {
   // -------------------------------------------------------
   // Intersection Observer — attached to a FIXED sentinel div
   // -------------------------------------------------------
+  // const initiateObserver = useCallback(() => {
+  //   if (observerRef.current) observerRef.current.disconnect();
+
+  //   observerRef.current = new IntersectionObserver(
+  //     (entries) => {
+  //       const first = entries[0];
+  //       if (
+  //         first.isIntersecting &&
+  //         !isFetchingRef.current &&
+  //         hasMore &&
+  //         !loadingMore &&
+  //         !loadingInitial
+  //       ) {
+  //         setTimeout(() => {
+  //           fetchPosts(posts.length);
+  //         }, 100);
+  //       }
+  //     },
+  //     {
+  //       root: null,
+  //       rootMargin: "200px",
+  //       threshold: 0,
+  //     }
+  //   );
+
+  //   if (sentinelRef.current) {
+  //     observerRef.current.observe(sentinelRef.current);
+  //   }
+  // }, [posts.length, hasMore, loadingInitial, loadingMore]);
+
   const initiateObserver = useCallback(() => {
     if (observerRef.current) observerRef.current.disconnect();
 
@@ -308,7 +397,8 @@ export default function PostFeed() {
           !isFetchingRef.current &&
           hasMore &&
           !loadingMore &&
-          !loadingInitial
+          !loadingInitial &&
+          posts.length > 0 // 👈 ADD THIS CHECK
         ) {
           fetchPosts(posts.length);
         }
@@ -357,6 +447,13 @@ export default function PostFeed() {
           onPostDeleted={(id) => {
             setPosts((prev) => prev.filter((p) => p.id !== id));
           }}
+          onConnectionStatusChanged={(postId, newStatus) => {
+            setPosts((prev) =>
+              prev.map((p) =>
+                p.id === postId ? { ...p, connection_status: newStatus } : p
+              )
+            );
+          }}
         />
       ))}
 
@@ -378,4 +475,15 @@ export default function PostFeed() {
       )}
     </Box>
   );
+}
+
+{
+  /* <PostCard
+          key={post.id}
+          post={post}
+          loadingIni={loadingInitial}
+          onPostDeleted={(id) => {
+            setPosts((prev) => prev.filter((p) => p.id !== id));
+          }}
+        /> */
 }
