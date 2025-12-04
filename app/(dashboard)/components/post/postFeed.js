@@ -447,12 +447,14 @@ export default function PostFeed() {
           onPostDeleted={(id) => {
             setPosts((prev) => prev.filter((p) => p.id !== id));
           }}
-          onConnectionStatusChanged={(postId, newStatus) => {
+          onConnectionStatusChanged={(userId, newStatus) => {
+            // 👇 Update ALL posts from this user
             setPosts((prev) =>
               prev.map((p) =>
-                p.id === postId ? { ...p, connection_status: newStatus } : p
+                p.owner === userId ? { ...p, connection_status: newStatus } : p
               )
             );
+            fetchPosts();
           }}
         />
       ))}

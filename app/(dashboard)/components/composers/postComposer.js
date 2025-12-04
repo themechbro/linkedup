@@ -17,7 +17,7 @@ import {
 import { Image, Video, FileText, Send, Smile } from "lucide-react";
 import PostModal from "./postModal";
 
-export default function PostComposer({ currentUser }) {
+export default function PostComposer({ currentUser, onSucess }) {
   const [open, setOpen] = useState(false);
   const [content, setContent] = useState("");
   const [media, setMedia] = useState([]);
@@ -50,6 +50,7 @@ export default function PostComposer({ currentUser }) {
         setContent("");
         setMedia([]);
         setOpen(false);
+        onSucess();
       }
     } catch (err) {
       console.error("Error posting:", err);

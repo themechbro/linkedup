@@ -44,7 +44,12 @@ import {
 import EditPostModal from "./modals/editpostModal";
 import ConnectionButtons from "./connection/buttons";
 
-export default function PostCard({ post, loadingIni, onPostDeleted }) {
+export default function PostCard({
+  post,
+  loadingIni,
+  onPostDeleted,
+  onConnectionStatusChanged,
+}) {
   const media =
     typeof post.media_url === "string"
       ? JSON.parse(post.media_url)
@@ -291,10 +296,13 @@ export default function PostCard({ post, loadingIni, onPostDeleted }) {
       const res = await acceptConnection(senderId);
       if (res.ok && res.success) {
         setLocalStatus("connected");
-        // 👇 UPDATE THE POST IN PARENT
+
+        // 👇 Update ALL posts from this user in the parent feed
         if (onConnectionStatusChanged) {
-          onConnectionStatusChanged(post.id, "connected");
+          onConnectionStatusChanged(post.owner, "connected");
         }
+      } else {
+        console.error("Accept failed:", res.message);
       }
     } catch (err) {
       console.error("Accept error:", err);

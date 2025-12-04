@@ -346,7 +346,8 @@ import { Check, X } from "lucide-react";
 // }
 
 export default function ProfileFirst({ profile, requestedBy, isLoading }) {
-  console.log(profile);
+  console.log("Profile object:", profile); // 👈 Check the entire profile object
+  console.log("Profile userId:", profile.userId);
   const router = useRouter();
   const [isOwner, setIsOwner] = useState(false);
   const [picModal, setPicModal] = useState({
@@ -362,6 +363,8 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
 
   const [connectStatus, setConnectStatus] = useState("loading");
   const [connectLoading, setConnectLoading] = useState(false);
+  const [fetchConnectCount, setFetchConnectCount] = useState({});
+  const [connectionCountLoading, setConnectionCountLoading] = useState(true);
 
   const coverImageUrl = profile.coverPic
     ? `${process.env.NEXT_PUBLIC_HOST_IP}${profile.coverPic}`
@@ -381,8 +384,11 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
           `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/check_connection?profileId=${profile.userId}`,
           { credentials: "include" }
         );
+
         const data = await res.json();
-        setConnectStatus(data.status); // "connected", "pending", "incoming_request", "not_connected"
+
+        setConnectStatus(data.status);
+        // "connected", "pending", "incoming_request", "not_connected"
       } catch (err) {
         console.error("Error checking connection:", err);
         setConnectStatus("not_connected");
@@ -391,6 +397,51 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
 
     checkConnection();
   }, [profile.userId, isOwner]);
+
+  // Connection Count
+  useEffect(() => {
+    const fetchConnectionCount = async () => {
+      console.log("🔍 Fetching connection count for:", profile.userId); // 👈 ADD THIS
+
+      if (!profile.userId) {
+        console.log("⚠️ No userId found"); // 👈 ADD THIS
+        return;
+      }
+
+      setConnectionCountLoading(true);
+
+      try {
+        const url = `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/connection_length_user?user_id=${profile.userId}`;
+        console.log("📡 Calling URL:", url); // 👈 ADD THIS
+
+        const connectionCountRes = await fetch(url, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        console.log("📥 Response status:", connectionCountRes.status); // 👈 ADD THIS
+
+        if (!connectionCountRes.ok) {
+          console.error("❌ Failed to fetch connection count");
+          return;
+        }
+
+        const data1 = await connectionCountRes.json();
+        console.log("📦 Received data:", data1); // 👈 ADD THIS
+
+        if (data1.success) {
+          setFetchConnectCount(data1);
+          console.log("✅ State updated:", data1); // 👈 ADD THIS
+        }
+      } catch (err) {
+        console.error("💥 Error fetching connection count:", err);
+      } finally {
+        setConnectionCountLoading(false);
+      }
+    };
+
+    fetchConnectionCount();
+  }, [profile.userId]);
 
   // 👇 Handle connect button
   const handleConnect = async () => {
@@ -772,7 +823,9 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
               level="body-sm"
               sx={{ color: "primary.600", mt: 0.5, cursor: "pointer" }}
             >
-              500+ connections
+              {connectionCountLoading
+                ? "Loading..."
+                : `${fetchConnectCount?.totalConnections || 0} connections`}
             </Typography>
           </Box>
 
