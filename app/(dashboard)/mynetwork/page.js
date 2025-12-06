@@ -6,28 +6,26 @@ import { useState, useEffect } from "react";
 export default function MyNetworkPage() {
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const fetchSuggestions = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/suggestions?limit=10&offset=0`,
+        { credentials: "include" }
+      );
 
-  useEffect(() => {
-    const fetchSuggestions = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/suggestions?limit=10&offset=0`,
-          { credentials: "include" }
-        );
+      const data = await res.json();
 
-        const data = await res.json();
-
-        if (data.success) {
-          setSuggestions(data.suggestions);
-        }
-      } catch (err) {
-        console.error("Error fetching suggestions:", err);
-      } finally {
-        setLoading(false);
+      if (data.success) {
+        setSuggestions(data.suggestions);
       }
-    };
-
+    } catch (err) {
+      console.error("Error fetching suggestions:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
     fetchSuggestions();
   }, []);
 
@@ -71,7 +69,7 @@ export default function MyNetworkPage() {
               flex: "0 0 auto",
             }}
           >
-            <ProfileCardNetwork profile={item} />
+            <ProfileCardNetwork profile={item} onSuccess={fetchSuggestions} />
           </Box>
         ))}
       </Box>

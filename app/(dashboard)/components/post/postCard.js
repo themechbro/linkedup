@@ -15,7 +15,6 @@ import {
   ListItemDecorator,
   Skeleton,
   Snackbar,
-  Tooltip,
 } from "@mui/joy";
 import {
   ThumbsUp,
@@ -23,9 +22,6 @@ import {
   Send,
   Repeat,
   EllipsisVertical,
-  Plus,
-  Check,
-  X,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -40,9 +36,12 @@ import {
   sendConnectionRequest,
   acceptConnection,
   rejectConnection,
+  renderContentWithHashtagsAndLinks,
 } from "./lib/helpers";
 import EditPostModal from "./modals/editpostModal";
 import ConnectionButtons from "./connection/buttons";
+import ImagegridModal from "./ImageGrid/imageModal";
+import RepostViewerModal from "./modals/repostviewer";
 
 export default function PostCard({
   post,
@@ -73,7 +72,13 @@ export default function PostCard({
     post.connection_status || "not_connected"
   );
   const [connLoading, setConnLoading] = useState(false);
+  const [mediaViewer, setMediaViewer] = useState({
+    open: false,
+    currentIndex: 0,
+  });
+  const [repostModal, setRepostModal] = useState(false);
 
+  // Functions
   const handleCommentAdded = (comment) => {
     setNewComment(comment);
   };
@@ -94,36 +99,6 @@ export default function PostCard({
     } catch (err) {
       console.error("Error liking post:", err);
     }
-  };
-
-  const renderContentWithHashtags = (text) => {
-    if (!text) return null;
-
-    // Regex to find hashtags: a '#' followed by one or more word characters.
-    const hashtagRegex = /(#\w+)/g;
-    const parts = text.split(hashtagRegex);
-
-    return parts.map((part, index) => {
-      if (part.match(hashtagRegex)) {
-        // This part is a hashtag, so we style it.
-        return (
-          <Typography
-            key={index}
-            component="span" // Render as a span to stay inline
-            sx={{
-              fontWeight: "bold",
-              color: "primary.500", // Joy UI's primary blue color
-              cursor: "pointer",
-              "&:hover": { textDecoration: "underline" },
-            }}
-          >
-            {part}
-          </Typography>
-        );
-      }
-      // This part is regular text.
-      return part;
-    });
   };
 
   if (loadingIni) {
@@ -246,22 +221,14 @@ export default function PostCard({
       ? JSON.parse(post.original_post.media_url)
       : post.original_post?.media_url || [];
 
-  // async function handleConnect() {
-  //   const res = await sendConnectionRequest(post.owner);
-  //   if (res.success) {
-  //     setLocalStatus("pending"); // instantly update UI
-  //   }
-  // }
+  // Media
+  const openMediaViewer = (index) => {
+    setMediaViewer({ open: true, currentIndex: index });
+  };
 
-  // const handleAccept = async (id) => {
-  //   const res = await acceptConnection(id);
-  //   if (res.success) setLocalStatus("connected");
-  // };
-
-  // const handleReject = async (id) => {
-  //   const res = await rejectConnection(id);
-  //   if (res.success) setLocalStatus("not_connected");
-  // };
+  const closeMediaViewer = () => {
+    setMediaViewer({ open: false, currentIndex: 0 });
+  };
 
   const handleConnect = async () => {
     if (connLoading) return;
@@ -382,61 +349,14 @@ export default function PostCard({
                     minute: "2-digit",
                     day: "2-digit",
                     month: "short",
-                  })}
+                  })}{" "}
+                  · {post.status == "edited" ? post.status : null}
                 </Typography>
               </Box>
             </Box>
 
             <Box className="post-menu" sx={{ display: "flex", gap: 2 }}>
-              {/* {post.current_user !== post.owner ? (
-                <Button
-                  variant="plain"
-                  sx={{ fontFamily: "Roboto Condensed" }}
-                  startDecorator={<Plus />}
-                  onClick={sendConnectionRequest(post.owner)}
-                >
-                  Connect
-                </Button>
-              ) : null} */}
-
-              {/* Connection Buttons */}
-
-              {/* {post.owner !== post.current_user && (
-                <>
-                  {localStatus === "not_connected" && (
-                    <Button onClick={handleConnect}>Connect</Button>
-                  )}
-
-                  {localStatus === "pending" && (
-                    <Button disabled>Pending...</Button>
-                  )}
-
-                  {post.connection_status === "incoming_request" && (
-                    <Box>
-                      <Tooltip title="Accept Request">
-                        <Button
-                          sx={{ mr: 3 }}
-                          onClick={() => acceptConnection(post.owner)}
-                          startDecorator={<Check />}
-                        ></Button>
-                      </Tooltip>
-                      <Tooltip title="Reject Request">
-                        <Button
-                          onClick={() => rejectConnection(post.owner)}
-                          startDecorator={<X />}
-                        ></Button>
-                      </Tooltip>
-                    </Box>
-                  )}
-
-                  {post.connection_status === "connected" && (
-                    <Button disabled variant="plain">
-                      Connected
-                    </Button>
-                  )}
-                </>
-              )} */}
-
+              {/* Buttons */}
               <ConnectionButtons
                 post={post}
                 handleConnect={handleConnect}
@@ -500,7 +420,7 @@ export default function PostCard({
 
           {/* Content */}
           <Typography level="body-md" sx={{ mb: 2, whiteSpace: "pre-wrap" }}>
-            {renderContentWithHashtags(post.content)}
+            {renderContentWithHashtagsAndLinks(post.content)}
           </Typography>
 
           {/* 🔄 ORIGINAL POST CONTENT (inside repost) */}
@@ -513,6 +433,7 @@ export default function PostCard({
                 p: 2,
                 my: 2,
               }}
+              onClick={() => setRepostModal(true)}
             >
               {/* Original Post Header */}
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -547,36 +468,118 @@ export default function PostCard({
                 level="body-sm"
                 sx={{ mt: 1, whiteSpace: "pre-wrap" }}
               >
-                {renderContentWithHashtags(post.original_post.content)}
+                {renderContentWithHashtagsAndLinks(post.original_post.content)}
               </Typography>
 
               {/* Original Post Media */}
               {originalMedia.length > 0 && (
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
-                  {originalMedia.map((m, i) =>
-                    m.type === "videos" ? (
-                      <video
+                <Box
+                  sx={{
+                    display: "grid",
+                    gap: 0.5,
+                    mt: 2,
+                    borderRadius: "lg",
+                    overflow: "hidden",
+                    gridTemplateColumns:
+                      originalMedia.length === 1
+                        ? "1fr"
+                        : originalMedia.length === 2
+                        ? "1fr 1fr"
+                        : originalMedia.length === 3
+                        ? "repeat(2, 1fr)"
+                        : originalMedia.length === 4
+                        ? "repeat(2, 1fr)"
+                        : "repeat(3, 1fr)",
+                  }}
+                >
+                  {originalMedia.slice(0, 5).map((m, i) => {
+                    const isVideo = m.type === "videos";
+                    const isLastItem = i === 4 && originalMedia.length > 5;
+                    const remainingCount = originalMedia.length - 5;
+
+                    return (
+                      <Box
                         key={i}
-                        src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
-                        controls
-                        style={{ width: "100%", borderRadius: "8px" }}
-                      />
-                    ) : (
-                      <img
-                        key={i}
-                        src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
-                        alt="post media"
-                        style={{ borderRadius: "8px", width: "100%" }}
-                      />
-                    )
-                  )}
+                        sx={{
+                          position: "relative",
+                          width: "100%",
+                          height:
+                            originalMedia.length === 1
+                              ? "400px"
+                              : originalMedia.length === 2
+                              ? "300px"
+                              : "200px",
+                          overflow: "hidden",
+                          bgcolor: "black",
+                          cursor: "pointer",
+                          transition: "transform 0.2s",
+                          "&:hover": {
+                            transform: "scale(1.02)",
+                          },
+                          ...(originalMedia.length === 3 &&
+                            i === 0 && {
+                              gridColumn: "span 2",
+                              height: "300px",
+                            }),
+                        }}
+                        onClick={() => openMediaViewer(i)}
+                      >
+                        {isLastItem ? (
+                          <>
+                            <Image
+                              src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                              alt="post media"
+                              fill
+                              style={{
+                                objectFit: "cover",
+                                filter: "brightness(0.4)",
+                              }}
+                              unoptimized
+                            />
+                            <Box
+                              sx={{
+                                position: "absolute",
+                                top: "50%",
+                                left: "50%",
+                                transform: "translate(-50%, -50%)",
+                                color: "white",
+                                fontSize: "2rem",
+                                fontWeight: "bold",
+                                zIndex: 1,
+                              }}
+                            >
+                              +{remainingCount}
+                            </Box>
+                          </>
+                        ) : isVideo ? (
+                          <video
+                            src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                              pointerEvents: "none",
+                            }}
+                          />
+                        ) : (
+                          <Image
+                            src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                            alt="post media"
+                            fill
+                            style={{ objectFit: "cover" }}
+                            unoptimized
+                          />
+                        )}
+                      </Box>
+                    );
+                  })}
                 </Box>
               )}
             </Card>
           )}
 
           {/* Media */}
-          {media.length > 0 && (
+          {/* {media.length > 0 && (
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
               {media.map((m, i) =>
                 m.type === "videos" ? (
@@ -625,6 +628,110 @@ export default function PostCard({
                 )
               )}
             </Box>
+          )} */}
+
+          {media.length > 0 && (
+            <Box
+              sx={{
+                display: "grid",
+                gap: 0.5,
+                mt: 2,
+                borderRadius: "lg",
+                overflow: "hidden",
+                gridTemplateColumns:
+                  media.length === 1
+                    ? "1fr"
+                    : media.length === 2
+                    ? "1fr 1fr"
+                    : media.length === 3
+                    ? "repeat(2, 1fr)"
+                    : media.length === 4
+                    ? "repeat(2, 1fr)"
+                    : "repeat(3, 1fr)",
+              }}
+            >
+              {media.slice(0, 5).map((m, i) => {
+                const isVideo = m.type === "videos";
+                const isLastItem = i === 4 && media.length > 5;
+                const remainingCount = media.length - 5;
+
+                return (
+                  <Box
+                    key={i}
+                    sx={{
+                      position: "relative",
+                      width: "100%",
+                      height:
+                        media.length === 1
+                          ? "400px"
+                          : media.length === 2
+                          ? "300px"
+                          : "200px",
+                      overflow: "hidden",
+                      bgcolor: "black",
+                      cursor: "pointer",
+                      transition: "transform 0.2s",
+                      "&:hover": {
+                        transform: "scale(1.02)",
+                      },
+                      ...(media.length === 3 &&
+                        i === 0 && {
+                          gridColumn: "span 2",
+                          height: "300px",
+                        }),
+                    }}
+                    onClick={() => openMediaViewer(i)}
+                  >
+                    {isLastItem ? (
+                      <>
+                        <Image
+                          src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                          alt="post media"
+                          fill
+                          style={{
+                            objectFit: "cover",
+                            filter: "brightness(0.4)",
+                          }}
+                          unoptimized
+                        />
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            color: "white",
+                            fontSize: "2rem",
+                            fontWeight: "bold",
+                            zIndex: 1,
+                          }}
+                        >
+                          +{remainingCount}
+                        </Box>
+                      </>
+                    ) : isVideo ? (
+                      <video
+                        src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          pointerEvents: "none",
+                        }}
+                      />
+                    ) : (
+                      <Image
+                        src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                        alt="post media"
+                        fill
+                        style={{ objectFit: "cover" }}
+                        unoptimized
+                      />
+                    )}
+                  </Box>
+                );
+              })}
+            </Box>
           )}
 
           <Box sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -652,7 +759,7 @@ export default function PostCard({
               </Box>
             )}
             {post.comment_count > 0 && (
-              <Box className="comment-counts">
+              <Box className="comment-counts" sx={{ display: "flex", gap: 1 }}>
                 <Typography
                   level="body-sm"
                   color="neutral"
@@ -661,6 +768,17 @@ export default function PostCard({
                 >
                   {post.comment_count} comments
                 </Typography>
+                {post.repost_count > 0 ? (
+                  <Box>
+                    <Typography
+                      level="body-sm"
+                      color="neutral"
+                      sx={{ cursor: "pointer", textDecoration: "underline" }}
+                    >
+                      {post.repost_count} reposts
+                    </Typography>
+                  </Box>
+                ) : null}
               </Box>
             )}
           </Box>
@@ -749,6 +867,44 @@ export default function PostCard({
         closeEdit={() => setOpenEdit(false)}
         post={post}
       />
+      {/* Image grid viewer */}
+      <ImagegridModal
+        mediaViewer={mediaViewer}
+        closeMediaViewer={closeMediaViewer}
+        setMediaViewer={setMediaViewer}
+        media={media}
+      />
+
+      {/* Repost Post Viewer Modal */}
+      {post.repost_of && post.original_post && (
+        <RepostViewerModal
+          open={repostModal}
+          close={() => setRepostModal(false)}
+          repostedPost={post.original_post}
+        />
+      )}
     </>
   );
+}
+
+{
+  /* <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
+                  {originalMedia.map((m, i) =>
+                    m.type === "videos" ? (
+                      <video
+                        key={i}
+                        src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                        controls
+                        style={{ width: "100%", borderRadius: "8px" }}
+                      />
+                    ) : (
+                      <img
+                        key={i}
+                        src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                        alt="post media"
+                        style={{ borderRadius: "8px", width: "100%" }}
+                      />
+                    )
+                  )}
+                </Box> */
 }

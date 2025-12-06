@@ -1,3 +1,6 @@
+import { Typography } from "@mui/joy";
+
+// Delete Post
 export const deletePost = async (post_id, current_user) => {
   try {
     const response = await fetch(
@@ -64,20 +67,7 @@ export async function repostPost(postId, userId) {
   }
 }
 
-// connection request
-// export async function sendConnectionRequest(receiverId) {
-//   const res = await fetch(
-//     `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/request`,
-//     {
-//       method: "POST",
-//       credentials: "include",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({ receiver_id: receiverId }),
-//     }
-//   );
-//   return await res.json();
-// }
-
+// Send Request
 export async function sendConnectionRequest(receiver_id) {
   try {
     const res = await fetch(
@@ -108,40 +98,7 @@ export async function sendConnectionRequest(receiver_id) {
   }
 }
 
-// Accept Connection
-// export async function acceptConnection(otherUserId) {
-//   try {
-//     const res = await fetch(
-//       `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/accept`,
-//       {
-//         method: "POST",
-//         credentials: "include",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({ sender_id: otherUserId }), // The user who sent request
-//       }
-//     );
-
-//     const data = await res.json();
-
-//     if (!res.ok) {
-//       return { success: false, message: data.message || "Failed to accept" };
-//     }
-
-//     return {
-//       success: true,
-//       message: data.message || "Connection accepted",
-//     };
-//   } catch (err) {
-//     console.error("Accept connection error:", err);
-//     return {
-//       success: false,
-//       message: "Network error",
-//     };
-//   }
-// }
-
+// Accept Request
 export async function acceptConnection(sender_id) {
   try {
     const res = await fetch(
@@ -166,43 +123,7 @@ export async function acceptConnection(sender_id) {
   }
 }
 
-// Reject Connections
-// export async function rejectConnection(otherUserId) {
-//   try {
-//     const res = await fetch(
-//       `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/reject`,
-//       {
-//         method: "POST",
-//         credentials: "include",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({ sender_id: otherUserId }), // The user who sent request
-//       }
-//     );
-
-//     const data = await res.json();
-
-//     if (!res.ok) {
-//       return {
-//         success: false,
-//         message: data.message || "Failed to reject request",
-//       };
-//     }
-
-//     return {
-//       success: true,
-//       message: data.message || "Request rejected",
-//     };
-//   } catch (err) {
-//     console.error("Reject connection error:", err);
-//     return {
-//       success: false,
-//       message: "Network error",
-//     };
-//   }
-// }
-
+// Reject Request
 export async function rejectConnection(sender_id) {
   try {
     const res = await fetch(
@@ -226,3 +147,68 @@ export async function rejectConnection(sender_id) {
     return { ok: false, success: false, message: "Failed to reject" };
   }
 }
+
+// Hashtags and Link Finder
+export const renderContentWithHashtagsAndLinks = (text) => {
+  if (!text) return null;
+
+  // Regex patterns
+  const hashtagRegex = /(#\w+)/g;
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+  // Combined regex to match both hashtags and URLs
+  const combinedRegex = /(#\w+|https?:\/\/[^\s]+)/g;
+
+  const parts = text.split(combinedRegex);
+
+  return parts.map((part, index) => {
+    // Check if it's a hashtag
+    if (part.match(hashtagRegex)) {
+      return (
+        <Typography
+          key={index}
+          component="span"
+          sx={{
+            fontWeight: "bold",
+            color: "primary.500",
+            cursor: "pointer",
+            "&:hover": { textDecoration: "underline" },
+          }}
+          onClick={() => {
+            // Handle hashtag click - navigate to hashtag page
+            console.log("Clicked hashtag:", part);
+            // router.push(`/hashtag/${part.slice(1)}`);
+          }}
+        >
+          {part}
+        </Typography>
+      );
+    }
+
+    // Check if it's a URL
+    if (part.match(urlRegex)) {
+      return (
+        <Typography
+          key={index}
+          component="a"
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{
+            color: "primary.600",
+            textDecoration: "none",
+            cursor: "pointer",
+            "&:hover": { textDecoration: "underline" },
+          }}
+        >
+          {part}
+        </Typography>
+      );
+    }
+
+    // Regular text
+    return part;
+  });
+};
+
+// Send request functions

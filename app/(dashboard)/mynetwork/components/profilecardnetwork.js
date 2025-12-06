@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { sendConnectionRequest } from "../../components/post/lib/helpers";
 import { useState } from "react";
 
-export default function ProfileCardNetwork({ profile, onConnect }) {
+export default function ProfileCardNetwork({ profile, onConnect, onSuccess }) {
   const [localStatus, setLocalStatus] = useState(
     profile.connection_status || "not_connected"
   );
@@ -21,6 +21,7 @@ export default function ProfileCardNetwork({ profile, onConnect }) {
     setConnLoading(true);
 
     setLocalStatus("pending");
+    onSuccess();
 
     try {
       const res = await sendConnectionRequest(profile.user_id);
