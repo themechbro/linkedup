@@ -7,8 +7,8 @@ const robotoCondensed = Roboto_Condensed({
 });
 
 export const metadata = {
-  title: "Linkedup",
-  description: "It's Free and Always will be.",
+  title: "LinkedUp",
+  description: "It's Free and Always will be. Developed by Adrin T paul",
 };
 
 export default function RootLayout({ children }) {

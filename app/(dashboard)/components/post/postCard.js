@@ -199,10 +199,14 @@ export default function PostCard({
 
     if (action === "Report Post") {
       // open report modal
+      alert("Report feature coming soon.");
     }
 
     if (action === "Not Interested") {
-      // hide post from feed
+      alert("This feature coming soon.");
+    }
+    if (action === "Save") {
+      alert("This feature coming soon.");
     }
   };
 
@@ -432,6 +436,7 @@ export default function PostCard({
                 backgroundColor: "neutral.softBg",
                 p: 2,
                 my: 2,
+                cursor: "pointer",
               }}
               onClick={() => setRepostModal(true)}
             >

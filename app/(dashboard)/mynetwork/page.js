@@ -1,7 +1,7 @@
 "use client";
 import { Typography, Box } from "@mui/joy";
-import ProfileCardNetwork from "./components/profilecardnetwork";
 import { useState, useEffect } from "react";
+import ProfileSuggestionCard from "./components/profilecardnetwork";
 
 export default function MyNetworkPage() {
   const [suggestions, setSuggestions] = useState([]);
@@ -41,38 +41,62 @@ export default function MyNetworkPage() {
     { name: "Sanket Prasad", headline: "Consultant at deloitte" },
   ];
   return (
-    <Box component="main" sx={{ px: { xs: 2, md: 4 } }}>
-      <Typography level="h2" sx={{ fontFamily: "Roboto Condensed", mb: 2 }}>
-        Grow your network
-      </Typography>
+    // <Box component="main" sx={{ px: { xs: 2, md: 4 } }}>
+    //   <Typography level="h2" sx={{ fontFamily: "Roboto Condensed", mb: 2 }}>
+    //     Grow your network
+    //   </Typography>
 
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 2,
-          overflowX: "auto",
-          overflowY: "hidden",
-          px: 5,
-          pb: 2,
-          scrollSnapType: "x mandatory",
-          "&::-webkit-scrollbar": {
-            display: "none",
-          },
-        }}
-      >
-        {suggestions?.map((item, index) => (
-          <Box
-            key={index}
-            sx={{
-              scrollSnapAlign: "start",
-              flex: "0 0 auto",
-            }}
-          >
-            <ProfileCardNetwork profile={item} onSuccess={fetchSuggestions} />
-          </Box>
-        ))}
-      </Box>
+    //   <Box
+    //     sx={{
+    //       display: "flex",
+    //       flexWrap: "wrap",
+    //       gap: 2,
+    //       overflowX: "auto",
+    //       overflowY: "hidden",
+    //       px: 5,
+    //       pb: 2,
+    //       scrollSnapType: "x mandatory",
+    //       "&::-webkit-scrollbar": {
+    //         display: "none",
+    //       },
+    //     }}
+    //   >
+    //     {suggestions?.map((item, index) => (
+    //       <Box
+    //         key={index}
+    //         sx={{
+    //           scrollSnapAlign: "start",
+    //           flex: "0 0 auto",
+    //         }}
+    //       >
+    //         <ProfileCardNetwork profile={item} onSuccess={fetchSuggestions} />
+    //       </Box>
+    //     ))}
+    //   </Box>
+    // </Box>
+
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+        gap: 2,
+        p: 2,
+      }}
+    >
+      {suggestions.map((profile) => (
+        <ProfileSuggestionCard
+          key={profile.user_id}
+          profile={profile}
+          onConnect={(userId) => {
+            console.log("Connected to:", userId);
+            // Optionally remove from suggestions
+          }}
+          onReject={(userId) => {
+            // Remove from suggestions list
+            setSuggestions((prev) => prev.filter((p) => p.user_id !== userId));
+          }}
+        />
+      ))}
     </Box>
   );
 }
