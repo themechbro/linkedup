@@ -138,7 +138,7 @@
 // }
 
 "use client";
-import { Avatar, Button, Input, Typography } from "@mui/joy";
+import { Avatar, Button, Input, Typography, Badge } from "@mui/joy";
 import {
   AppBar,
   Toolbar,
@@ -151,13 +151,14 @@ import {
 import Link from "next/link";
 import { home_nav_items } from "../misc/home-nav-items";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, Search } from "lucide-react";
 import NavDropdown from "./nav-dropdown";
 
 export default function HomeNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [unreadCount, setUnreadCount] = useState(0);
   const path = usePathname();
 
   const handleDrawerToggle = () => {
@@ -170,6 +171,27 @@ export default function HomeNavbar() {
     console.log("Searching for:", searchQuery);
     // router.push(`/search?q=${searchQuery}`);
   };
+
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_HOST_IP}/api/messages/unread_chat_count`,
+          { credentials: "include" }
+        );
+        const data = await res.json();
+        if (data.success) {
+          setUnreadCount(data.unread_count);
+        }
+      } catch (err) {
+        console.error("Error fetching unread count:", err);
+      }
+    };
+
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 10000); // Check every 10s
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <AppBar

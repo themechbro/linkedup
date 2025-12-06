@@ -843,7 +843,11 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
           ) : (
             <Box sx={{ display: "flex", gap: 1, alignItems: "center", mt: 2 }}>
               {renderConnectionButton()}
-              <Button variant="soft" sx={{ borderRadius: 20 }}>
+              <Button
+                variant="soft"
+                sx={{ borderRadius: 20 }}
+                onClick={() => router.push(`/messages?user=${profile.userId}`)}
+              >
                 Message
               </Button>
               <Button variant="plain">More</Button>
