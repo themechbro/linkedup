@@ -2,9 +2,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Box, Sheet } from "@mui/joy";
-// import ConversationList from "@/components/messages/ConversationList";
-// import ChatWindow from "@/components/messages/ChatWindow";
-// import EmptyState from "@/components/messages/EmptyState";
 import ConversationList from "./components/ConversationList";
 import ChatWindow from "./components/ChatWindow";
 import EmptyState from "./components/EmptyState";
@@ -56,14 +53,14 @@ export default function MessagesPage() {
         display: "flex",
         height: "calc(100vh - 64px)",
         mt: 8,
-        maxWidth: "1200px",
+        maxWidth: "100%",
         mx: "auto",
         gap: 0,
       }}
     >
       <Sheet
         sx={{
-          width: { xs: "100%", md: "350px" },
+          width: { xs: "100%", md: "450px" },
           display: { xs: selectedUserId ? "none" : "block", md: "block" },
           borderRight: "1px solid",
           borderColor: "divider",
