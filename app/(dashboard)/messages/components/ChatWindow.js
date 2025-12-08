@@ -8,11 +8,12 @@ import {
   IconButton,
   CircularProgress,
   Sheet,
+  Tooltip,
 } from "@mui/joy";
 import { Send, ArrowLeft, MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Fab } from "@mui/material";
-import { MoveDown } from "lucide-react";
+import { MoveDown, Heart } from "lucide-react";
 // export default function ChatWindow({ userId, onBack, onNewMessage }) {
 //   const [messages, setMessages] = useState([]);
 //   const [newMessage, setNewMessage] = useState("");
@@ -361,6 +362,7 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
   const messagesContainerRef = useRef(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const router = useRouter();
+  const isInitialLoad = useRef(true);
 
   useEffect(() => {
     if (userId) {
@@ -371,11 +373,21 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
       const interval = setInterval(fetchMessages, 3000);
       return () => clearInterval(interval);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  // useEffect(() => {
-  //   scrollToBottom();
-  // }, [messages]);
+  useEffect(() => {
+    if (messages.length > 0) {
+      if (isInitialLoad.current) {
+        scrollToBottom(false);
+        isInitialLoad.current = false;
+      } else if (!showScrollButton) {
+        // User is at bottom - auto-scroll for new messages
+        scrollToBottom(true);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]);
 
   const fetchMessages = async () => {
     try {
@@ -506,6 +518,25 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // double click
+  const handledoubleClick = async (msg_id) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_HOST_IP}/api/messages/like_a_message?msg_id=${msg_id}`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        console.log("message liked successfully");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   if (loading) {
     return (
       <Box
@@ -622,6 +653,9 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
                     justifyContent: isCurrentUser ? "flex-end" : "flex-start",
                     mb: showAvatar ? 2 : 0.5,
                   }}
+                  onDoubleClick={() => {
+                    handledoubleClick(msg.message_id);
+                  }}
                 >
                   {!isCurrentUser && showAvatar && (
                     <Avatar
@@ -647,28 +681,67 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
                       alignItems: isCurrentUser ? "flex-end" : "flex-start",
                     }}
                   >
-                    <Box
-                      sx={{
-                        backgroundColor: isCurrentUser
-                          ? "primary.300"
-                          : "white",
-                        color: isCurrentUser ? "white" : "text.primary",
-                        px: 2,
-                        py: 1,
-                        borderRadius: "18px",
-                        borderTopRightRadius: isCurrentUser ? "4px" : "18px",
-                        borderTopLeftRadius: isCurrentUser ? "18px" : "4px",
-                        boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-                      }}
-                    >
-                      <Typography
-                        level="body-md"
-                        sx={{ whiteSpace: "pre-wrap" }}
+                    <Tooltip title="Double tap on message to like">
+                      <Box
+                        sx={{
+                          backgroundColor: isCurrentUser
+                            ? "primary.300"
+                            : "white",
+                          color: isCurrentUser ? "white" : "text.primary",
+                          px: 2,
+                          py: 1,
+                          borderRadius: "18px",
+                          borderTopRightRadius: isCurrentUser ? "4px" : "18px",
+                          borderTopLeftRadius: isCurrentUser ? "18px" : "4px",
+                          boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                          userSelect: "none",
+                          WebkitUserSelect: "none",
+                          MozUserSelect: "none",
+                          msUserSelect: "none",
+                          cursor: "pointer",
+                        }}
                       >
-                        {msg.content}
-                      </Typography>
-                    </Box>
+                        <Typography
+                          level="body-md"
+                          sx={{ whiteSpace: "pre-wrap" }}
+                        >
+                          {msg.content}
+                        </Typography>
+                      </Box>
+                    </Tooltip>
 
+                    {/* Likes an counter for each message */}
+                    {msg.likes > 0 && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          mt: 0.5,
+                          gap: 0.5,
+                          px: 1,
+                        }}
+                      >
+                        <Typography
+                          level="body-sm"
+                          sx={{
+                            fontSize: "14px",
+                            cursor: "pointer",
+                            color: isCurrentUser ? "primary.700" : "red",
+                          }}
+                        >
+                          ❤️
+                        </Typography>
+
+                        {msg.liked_by?.length > 0 && (
+                          <Typography
+                            level="body-xs"
+                            sx={{ color: "neutral.600" }}
+                          >
+                            {msg.liked_by.length}
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
                     {showAvatar && (
                       <Typography
                         level="body-xs"

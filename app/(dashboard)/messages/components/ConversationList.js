@@ -68,7 +68,13 @@ export default function ConversationList({
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+      }}
+    >
       {/* Header */}
       <Box sx={{ p: 2, borderBottom: "1px solid", borderColor: "divider" }}>
         <Box
@@ -114,7 +120,7 @@ export default function ConversationList({
       </Box>
 
       {/* Conversations List */}
-      <Box sx={{ flex: 1, overflow: "auto" }}>
+      <Box sx={{ flex: 1, overflow: "auto", overflowX: "hidden", p: 1 }}>
         {filteredConversations.length === 0 ? (
           <Box
             sx={{

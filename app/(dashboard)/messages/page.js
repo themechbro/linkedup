@@ -51,8 +51,8 @@ export default function MessagesPage() {
     <Box
       sx={{
         display: "flex",
-        height: "calc(100vh - 64px)",
-        mt: 8,
+        height: "calc(100vh - 74px)",
+        mt: 0,
         maxWidth: "100%",
         mx: "auto",
         gap: 0,
