@@ -75,7 +75,9 @@ export default function HomePage() {
           currentUser={{
             full_name: fetchedData?.userData?.full_name,
             profile_picture: fetchedData?.userData?.profile_picture,
+            user_id: fetchedData?.userData?.user_id,
           }}
+          otherUserData={fetchedData}
         />
         <Divider></Divider>
         <PostFeed />

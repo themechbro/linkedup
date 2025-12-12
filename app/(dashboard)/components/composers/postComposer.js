@@ -16,14 +16,16 @@ import {
 } from "@mui/joy";
 import { Image, Video, FileText, Send, Smile } from "lucide-react";
 import PostModal from "./postModal";
+import PostJobModal from "./postJobModal";
 
-export default function PostComposer({ currentUser, onSucess }) {
+export default function PostComposer({ currentUser, onSucess, otherUserData }) {
   const [open, setOpen] = useState(false);
   const [content, setContent] = useState("");
   const [media, setMedia] = useState([]);
   const [mediaType, setMediaType] = useState(null);
   const [loading, setLoading] = useState(false);
   const [finalUrl, setFinalUrl] = useState("");
+  const [jobModal, setJobModal] = useState(false);
 
   const handleFileChange = (e, type) => {
     const files = Array.from(e.target.files);
@@ -84,7 +86,6 @@ export default function PostComposer({ currentUser, onSucess }) {
           cursor: "pointer",
           "&:hover": { boxShadow: "md" },
         }}
-        onClick={() => setOpen(true)}
       >
         <Box sx={{ display: "flex", flexDirection: "row", gap: 2, mb: 2 }}>
           <Avatar size="lg" src={finalUrl} sx={{ cursor: "pointer" }} />
@@ -97,6 +98,7 @@ export default function PostComposer({ currentUser, onSucess }) {
               px: 2,
               color: "#555",
             }}
+            onClick={() => setOpen(true)}
           >
             Start a post
           </Box>
@@ -120,7 +122,7 @@ export default function PostComposer({ currentUser, onSucess }) {
             </IconButton>
           </Tooltip>
           <Tooltip title="Post job">
-            <IconButton color="neutral">
+            <IconButton color="neutral" onClick={() => setJobModal(true)}>
               <FileText color="#915eff" />
               <Typography level="body-sm" sx={{ ml: 1 }}>
                 Job
@@ -128,7 +130,7 @@ export default function PostComposer({ currentUser, onSucess }) {
             </IconButton>
           </Tooltip>
           <Tooltip title="Write article">
-            <IconButton color="neutral">
+            <IconButton color="neutral" onClick={() => setOpen(true)}>
               <FileText color="#f8712e" />
               <Typography level="body-sm" sx={{ ml: 1 }}>
                 Write article
@@ -149,6 +151,16 @@ export default function PostComposer({ currentUser, onSucess }) {
         handlePost={handlePost}
         loading={loading}
         currentUser={currentUser}
+        profileUrl={finalUrl}
+      />
+
+      {/* Post Job Modal */}
+      <PostJobModal
+        open={jobModal}
+        close={() => {
+          setJobModal(false);
+        }}
+        currentUser={otherUserData}
         profileUrl={finalUrl}
       />
     </>
