@@ -363,6 +363,7 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const router = useRouter();
   const isInitialLoad = useRef(true);
+  const [currUser, setCurrUser] = useState({});
 
   useEffect(() => {
     if (userId) {
@@ -388,6 +389,23 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_HOST_IP}/api/auth/user_details`,
+          { method: "GET", credentials: "include" }
+        );
+        const data = await response.json();
+        setCurrUser(data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const fetchMessages = async () => {
     try {
@@ -519,13 +537,52 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
   };
 
   // double click
+  // const handledoubleClick = async (msg_id) => {
+  //   console.log(currUser?.meta?.user_id);
+
+  //   try {
+  //     const response = await fetch(
+  //       `${process.env.NEXT_PUBLIC_HOST_IP_MICRO}/api/message_micro/likeMessage/${msg_id}`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         credentials: "include",
+  //         body: JSON.stringify({
+  //           likedBy: currUser?.meta?.user_id,
+  //         }),
+  //       }
+  //     );
+
+  //     if (response.ok) {
+  //       console.log("message liked successfully");
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
   const handledoubleClick = async (msg_id) => {
+    const userId = currUser?.meta?.user_id;
+
+    if (!userId) {
+      console.warn("User not loaded yet, skipping like");
+      return;
+    }
+
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_IP}/api/messages/like_a_message?msg_id=${msg_id}`,
+        `${process.env.NEXT_PUBLIC_HOST_IP_MICRO}/api/message_micro/likeMessage/${msg_id}`,
         {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
           credentials: "include",
+          body: JSON.stringify({
+            likedBy: userId,
+          }),
         }
       );
 

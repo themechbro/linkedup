@@ -202,6 +202,7 @@ export default function PostJobModal({
   const [location, setLocation] = useState("");
   const [jobType, setJobType] = useState("");
   const [description, setDescription] = useState("");
+  const [applyLink, setApplyLink] = useState("");
 
   const handlePost = async () => {
     const isBrand = currentUser?.userData?.isbrand;
@@ -217,6 +218,7 @@ export default function PostJobModal({
       job_type: jobType,
       description,
       is_brand: isBrand,
+      applyLink,
     };
 
     try {
@@ -245,6 +247,7 @@ export default function PostJobModal({
       setLocation("");
       setJobType("");
       setDescription("");
+      setApplyLink("");
     } catch (error) {
       console.error("Error posting job:", error);
     }
@@ -323,6 +326,15 @@ export default function PostJobModal({
             placeholder="Describe the role..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+          />
+        </FormControl>
+
+        <FormControl sx={{ mb: 3 }}>
+          <FormLabel>Apply Link</FormLabel>
+          <Textarea
+            placeholder="Copy Paste the Job Link"
+            value={applyLink}
+            onChange={(e) => setApplyLink(e.target.value)}
           />
         </FormControl>
 
