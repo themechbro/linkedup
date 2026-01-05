@@ -527,7 +527,6 @@ export default function PostCard({
                               height: "300px",
                             }),
                         }}
-                        onClick={() => openMediaViewer(i)}
                       >
                         {isLastItem ? (
                           <>
