@@ -211,4 +211,11 @@ export const renderContentWithHashtagsAndLinks = (text) => {
   });
 };
 
+// Create viewPost Link
+export const createViewPostLink = (postId) => {
+  if (!postId) return null;
+  let createdLink = `${process.env.NEXT_PUBLIC_HOST_IP_FRONT}/viewPost/${postId}`;
+  return createdLink;
+};
+
 // Send request functions

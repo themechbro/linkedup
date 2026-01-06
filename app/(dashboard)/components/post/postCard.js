@@ -37,12 +37,13 @@ import {
   acceptConnection,
   rejectConnection,
   renderContentWithHashtagsAndLinks,
+  createViewPostLink,
 } from "./lib/helpers";
 import EditPostModal from "./modals/editpostModal";
 import ConnectionButtons from "./connection/buttons";
 import ImagegridModal from "./ImageGrid/imageModal";
 import RepostViewerModal from "./modals/repostviewer";
-
+import CopyClipboardSnack from "./snackbar/copyClipboardSnack";
 export default function PostCard({
   post,
   loadingIni,
@@ -77,7 +78,10 @@ export default function PostCard({
     currentIndex: 0,
   });
   const [repostModal, setRepostModal] = useState(false);
-
+  const [clipboardSnack, setClipboardSnack] = useState({
+    open: false,
+    type: "success",
+  });
   // Functions
   const handleCommentAdded = (comment) => {
     setNewComment(comment);
@@ -207,6 +211,28 @@ export default function PostCard({
     }
     if (action === "Save") {
       alert("This feature coming soon.");
+    }
+
+    if (action === "Copy link to Post") {
+      const link = createViewPostLink(post.id);
+      if (!link) return;
+
+      navigator.clipboard
+        .writeText(link)
+        .then(() => {
+          setClipboardSnack({ open: true, type: "success" });
+
+          setTimeout(() => {
+            setClipboardSnack((prev) => ({ ...prev, open: false }));
+          }, 3000);
+        })
+        .catch(() => {
+          setClipboardSnack({ open: true, type: "danger" });
+
+          setTimeout(() => {
+            setClipboardSnack((prev) => ({ ...prev, open: false }));
+          }, 3000);
+        });
     }
   };
 
@@ -376,19 +402,7 @@ export default function PostCard({
                 >
                   <EllipsisVertical />
                 </MenuButton>
-                {/* <Menu>
-                {postMenuItems.map((item, index) => {
-                  return (
-                    <MenuItem
-                      key={index}
-                      sx={{ fontFamily: "Roboto Condensed" }}
-                    >
-                      <ListItemDecorator>{item.icon}</ListItemDecorator>
-                      {item.name}
-                    </MenuItem>
-                  );
-                })}
-              </Menu> */}
+
                 <Menu>
                   {postMenuItems
                     .filter((item) => {
@@ -846,6 +860,8 @@ export default function PostCard({
         </CardContent>
       </Card>
 
+      {/* Other Components that are connected to the above Post Card */}
+
       {/* Liked List Modal */}
       <PostLikedList
         open={openLiked}
@@ -887,6 +903,13 @@ export default function PostCard({
           repostedPost={post.original_post}
         />
       )}
+
+      {/* Copy to clipboard Snack */}
+      <CopyClipboardSnack
+        open={clipboardSnack.open}
+        type={clipboardSnack.type}
+        close={() => setClipboardSnack((prev) => ({ ...prev, open: false }))}
+      />
     </>
   );
 }

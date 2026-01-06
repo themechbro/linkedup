@@ -374,7 +374,7 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
     setIsOwner(requestedBy?.meta?.user_id === profile.userId);
   }, [requestedBy, profile]);
 
-  // 👇 Check connection status
+  //  Check connection status
   useEffect(() => {
     const checkConnection = async () => {
       if (!profile.userId || isOwner) return;
@@ -443,7 +443,7 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
     fetchConnectionCount();
   }, [profile.userId]);
 
-  // 👇 Handle connect button
+  //  Handle connect button
   const handleConnect = async () => {
     if (connectLoading) return;
     setConnectLoading(true);
@@ -476,7 +476,7 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
     }
   };
 
-  // 👇 Handle accept connection
+  //  Handle accept connection
   const handleAccept = async () => {
     if (connectLoading) return;
     setConnectLoading(true);
@@ -506,7 +506,7 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
     }
   };
 
-  // 👇 Handle reject connection
+  //  Handle reject connection
   const handleReject = async () => {
     if (connectLoading) return;
     setConnectLoading(true);
@@ -536,7 +536,7 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
     }
   };
 
-  // 👇 Render connection button based on status
+  //  Render connection button based on status
   const renderConnectionButton = () => {
     if (connectStatus === "loading") {
       return (

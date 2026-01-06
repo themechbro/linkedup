@@ -54,7 +54,7 @@ export default function ImagegridModal({
           <X />
         </IconButton>
 
-        {media.length > 1 && (
+        {media?.length > 1 && (
           <>
             <IconButton
               onClick={goToPrev}
