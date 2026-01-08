@@ -597,57 +597,6 @@ export default function PostCard({
           )}
 
           {/* Media */}
-          {/* {media.length > 0 && (
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              {media.map((m, i) =>
-                m.type === "videos" ? (
-                  <Box
-                    key={i}
-                    sx={{
-                      position: "relative",
-                      width: "100%",
-                      aspectRatio: "16 / 9",
-                      mt: "10px",
-                      borderRadius: "lg",
-                      overflow: "hidden",
-                      bgcolor: "black",
-                    }}
-                  >
-                    <video
-                      src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
-                      controls
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                      }}
-                    />
-                  </Box>
-                ) : (
-                  <Box
-                    key={i}
-                    sx={{
-                      position: "relative",
-                      width: "100%",
-                      aspectRatio: "16 / 9", // Or another ratio that fits your images
-                      mt: "10px",
-                      borderRadius: "lg",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <Image
-                      src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
-                      alt="post media"
-                      fill
-                      sizes="100vw"
-                      unoptimized
-                    />
-                  </Box>
-                )
-              )}
-            </Box>
-          )} */}
-
           {media.length > 0 && (
             <Box
               sx={{
@@ -912,26 +861,4 @@ export default function PostCard({
       />
     </>
   );
-}
-
-{
-  /* <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
-                  {originalMedia.map((m, i) =>
-                    m.type === "videos" ? (
-                      <video
-                        key={i}
-                        src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
-                        controls
-                        style={{ width: "100%", borderRadius: "8px" }}
-                      />
-                    ) : (
-                      <img
-                        key={i}
-                        src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
-                        alt="post media"
-                        style={{ borderRadius: "8px", width: "100%" }}
-                      />
-                    )
-                  )}
-                </Box> */
 }

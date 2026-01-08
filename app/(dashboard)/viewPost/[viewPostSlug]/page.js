@@ -1,5 +1,5 @@
 "use client";
-import { Box, Typography } from "@mui/joy";
+import { Box, Card, Typography } from "@mui/joy";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
@@ -7,12 +7,18 @@ import { fetchPost } from "./lib/helper";
 import ViewPostCard from "./components/viewPostCard";
 import ProfileHomeCard from "../../components/profile/profilecard";
 import LinkedupNewsCard from "../../components/linkeup_news_card";
+import CommentComposer from "@/app/(dashboard)/components/comments/comment-composer";
+import CommentList from "@/app/(dashboard)/components/comments/commentList";
 
 export default function ViewPostPageSlug({ post }) {
   const path = usePathname();
   const post_id = path.split("/")[2]?.trim();
   const [data, setData] = useState({});
+  const [newComment, setNewComment] = useState(null);
 
+  const handleCommentAdded = (comment) => {
+    setNewComment(comment);
+  };
   useEffect(() => {
     if (!post_id) return;
 
@@ -25,25 +31,13 @@ export default function ViewPostPageSlug({ post }) {
   }, [post_id]);
 
   return (
-    // <Box sx={{ display: "flex", gap: 2, px: 3, py: 3 }}>
-    //   <Box sx={{ width: 300 }}>
-    //     <ProfileHomeCard />
-    //   </Box>
-    //   <Box sx={{ width: "auto" }}>
-    //     <ViewPostCard post={data.data} />
-    //   </Box>
-    //   <Box sx={{ width: 300 }}>
-    //     <LinkedupNewsCard />
-    //   </Box>
-    // </Box>
-
     <Box
       sx={{
         display: "flex",
-        gap: 2,
+        gap: 3,
         px: { xs: 1, sm: 2, md: 3 },
         py: 3,
-        justifyContent: "center",
+        // justifyContent: "center",
       }}
     >
       {/* LEFT SIDEBAR */}
@@ -58,7 +52,6 @@ export default function ViewPostPageSlug({ post }) {
       >
         <ProfileHomeCard />
       </Box>
-
       {/* CENTER FEED */}
       <Box
         sx={{
@@ -67,20 +60,39 @@ export default function ViewPostPageSlug({ post }) {
           width: "100%",
         }}
       >
-        <ViewPostCard post={data.data} />
+        <ViewPostCard post={data.data} requested_by={data.requested_by} />
       </Box>
-
-      {/* RIGHT SIDEBAR */}
       <Box
         sx={{
-          width: 300,
+          width: 500,
           display: { xs: "none", sm: "block" },
           position: "sticky",
           top: 80,
           height: "fit-content",
         }}
       >
-        <LinkedupNewsCard />
+        <Card sx={{ height: 500 }}>
+          <Box>
+            <Typography
+              level="h3"
+              sx={{
+                fontFamily: "Roboto Condensed",
+              }}
+            >
+              Comments
+            </Typography>
+          </Box>
+          <Box sx={{ overflow: "auto" }}>
+            <CommentList
+              post_id={data?.data?.id}
+              onCommentAdded={handleCommentAdded}
+            />
+          </Box>
+        </Card>
+
+        <CommentComposer post_id={data?.data?.id} newComment={newComment} />
+
+        {/* <LinkedupNewsCard /> */}
       </Box>
     </Box>
   );

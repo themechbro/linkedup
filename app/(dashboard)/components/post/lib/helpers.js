@@ -218,4 +218,24 @@ export const createViewPostLink = (postId) => {
   return createdLink;
 };
 
+// Handle Like
+// export const handleLike = async () => {
+//   try {
+//     const res = await fetch(
+//       `${process.env.NEXT_PUBLIC_HOST_IP}/api/likes/${post.id}`,
+//       {
+//         method: "POST",
+//         credentials: "include",
+//       }
+//     );
+//     const data = await res.json();
+//     if (res.ok) {
+//       setLikes(data.likes);
+//       setLiked(data.liked);
+//     }
+//   } catch (err) {
+//     console.error("Error liking post:", err);
+//   }
+// };
+
 // Send request functions
