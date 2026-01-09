@@ -44,6 +44,8 @@ import ConnectionButtons from "./connection/buttons";
 import ImagegridModal from "./ImageGrid/imageModal";
 import RepostViewerModal from "./modals/repostviewer";
 import CopyClipboardSnack from "./snackbar/copyClipboardSnack";
+import RepostSnackbar from "../../viewPost/[viewPostSlug]/components/repostSnackbar";
+import DeletePostSnackbar from "./snackbar/deletePostSnack";
 export default function PostCard({
   post,
   loadingIni,
@@ -67,6 +69,14 @@ export default function PostCard({
     open: false,
     message: "",
     color: "success",
+  });
+  const [repostSnack, setRepostSnack] = useState({
+    open: false,
+    type: "",
+  });
+  const [deleteSnack, setDeleteSnack] = useState({
+    open: false,
+    type: "",
   });
 
   const [localStatus, setLocalStatus] = useState(
@@ -182,17 +192,14 @@ export default function PostCard({
 
       if (result.success) {
         onPostDeleted(post.id);
-        setSnack({
+        setDeleteSnack({
           open: true,
-          message: "Post deleted successfully",
-          color: "success",
+          type: "success",
         });
       } else {
-        alert(result.error || "Failed to delete post");
-        setSnack({
+        setDeleteSnack({
           open: true,
-          message: result.error || "Failed to delete post",
-          color: "danger",
+          type: "fail",
         });
       }
     }
@@ -240,9 +247,15 @@ export default function PostCard({
     const result = await repostPost(post.id, post.current_user);
 
     if (result.success) {
-      alert("Reposted this Post");
+      setRepostSnack({
+        open: true,
+        type: "success",
+      });
     } else {
-      alert(result.message || "Failed to repost");
+      setRepostSnack({
+        open: true,
+        type: "fail",
+      });
     }
   }
 
@@ -818,17 +831,13 @@ export default function PostCard({
         post_id={post.id}
       />
 
-      {/* Snackbar */}
-      <Snackbar
-        open={snack.open}
-        color={snack.color}
-        onClose={() => setSnack({ ...snack, open: false })}
-        autoHideDuration={2000}
-        sx={{ fontFamily: "Roboto Condensed" }}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        {snack.message}
-      </Snackbar>
+      <RepostSnackbar
+        open={repostSnack.open}
+        close={() => {
+          setRepostSnack({ open: false, type: "" });
+        }}
+        type={repostSnack.type}
+      />
 
       {/* Edit Post Modal */}
       <EditPostModal
@@ -858,6 +867,14 @@ export default function PostCard({
         open={clipboardSnack.open}
         type={clipboardSnack.type}
         close={() => setClipboardSnack((prev) => ({ ...prev, open: false }))}
+      />
+
+      <DeletePostSnackbar
+        open={deleteSnack.open}
+        close={() => {
+          setDeleteSnack({ open: false, type: "" });
+        }}
+        type={deleteSnack.type}
       />
     </>
   );

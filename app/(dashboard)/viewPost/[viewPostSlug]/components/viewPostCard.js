@@ -16,6 +16,7 @@ import { useState } from "react";
 import PostLikedList from "@/app/(dashboard)/components/post/liked-list/postliked_list";
 import Image from "next/image";
 import { repostPost } from "@/app/(dashboard)/components/post/lib/helpers";
+import RepostSnackbar from "./repostSnackbar";
 
 export default function ViewPostCard({ post, requested_by }) {
   const [mediaViewer, setMediaViewer] = useState({
@@ -28,7 +29,10 @@ export default function ViewPostCard({ post, requested_by }) {
   const [liked, setLiked] = useState(
     post?.liked_by?.includes(requested_by) || false
   );
-
+  const [repostSnack, setRepostSnack] = useState({
+    open: false,
+    type: "",
+  });
   if (!post) return null;
 
   const isRepost = Boolean(post.repost_of && post.original_post);
@@ -73,9 +77,15 @@ export default function ViewPostCard({ post, requested_by }) {
     const result = await repostPost(post.id, post.current_user);
 
     if (result.success) {
-      alert("Reposted this Post");
+      setRepostSnack({
+        open: true,
+        type: "success",
+      });
     } else {
-      alert(result.message || "Failed to repost");
+      setRepostSnack({
+        open: true,
+        type: "fail",
+      });
     }
   }
 
@@ -220,6 +230,15 @@ export default function ViewPostCard({ post, requested_by }) {
         open={openLiked}
         close={() => setOpenLiked(false)}
         post_id={post.id}
+      />
+
+      {/* Repost Snack */}
+      <RepostSnackbar
+        open={repostSnack.open}
+        close={() => {
+          setRepostSnack({ open: false, type: "" });
+        }}
+        type={repostSnack.type}
       />
     </>
   );
