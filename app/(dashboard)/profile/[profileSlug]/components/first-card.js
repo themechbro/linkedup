@@ -17,6 +17,7 @@ import ProfilePictureViewer from "./prof_picture-viewer";
 import profileFallback from "@/public/assets/fallback/images.png";
 import coverFallback from "@/public/assets/fallback/images-cover.png";
 import { Check, X } from "lucide-react";
+import AddProfileSectionModal from "./add-profile-section/add-profile-section-modal";
 // export default function ProfileFirst({ profile, requestedBy, isLoading }) {
 //   console.log(profile);
 //   const router = useRouter();
@@ -346,8 +347,6 @@ import { Check, X } from "lucide-react";
 // }
 
 export default function ProfileFirst({ profile, requestedBy, isLoading }) {
-  console.log("Profile object:", profile); // 👈 Check the entire profile object
-  console.log("Profile userId:", profile.userId);
   const router = useRouter();
   const [isOwner, setIsOwner] = useState(false);
   const [picModal, setPicModal] = useState({
@@ -365,6 +364,7 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
   const [connectLoading, setConnectLoading] = useState(false);
   const [fetchConnectCount, setFetchConnectCount] = useState({});
   const [connectionCountLoading, setConnectionCountLoading] = useState(true);
+  const [openAddSection, setOpenAddSection] = useState(false);
 
   const coverImageUrl = profile.coverPic
     ? `${process.env.NEXT_PUBLIC_HOST_IP}${profile.coverPic}`
@@ -835,7 +835,11 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
               <Button variant="solid" color="primary" sx={{ borderRadius: 20 }}>
                 Open
               </Button>
-              <Button variant="soft" sx={{ borderRadius: 20 }}>
+              <Button
+                variant="soft"
+                sx={{ borderRadius: 20 }}
+                onClick={() => setOpenAddSection(true)}
+              >
                 Add Profile Section
               </Button>
               <Button variant="plain">More</Button>
@@ -884,6 +888,14 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
           imgurl={viewer.imgUrl}
         />
       )}
+
+      {/* Modal for Adding Sections */}
+      <AddProfileSectionModal
+        open={openAddSection}
+        close={() => {
+          setOpenAddSection(false);
+        }}
+      />
     </Card>
   );
 }
