@@ -14,7 +14,6 @@ import {
   MenuItem,
   ListItemDecorator,
   Skeleton,
-  Snackbar,
 } from "@mui/joy";
 import {
   ThumbsUp,
@@ -23,7 +22,7 @@ import {
   Repeat,
   EllipsisVertical,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import CommentComposer from "../comments/comment-composer";
 import CommentList from "../comments/commentList";
@@ -115,6 +114,7 @@ export default function PostCard({
     }
   };
 
+  //split loading into another component
   if (loadingIni) {
     return (
       <Card variant="outlined" sx={{ borderRadius: "lg" }}>

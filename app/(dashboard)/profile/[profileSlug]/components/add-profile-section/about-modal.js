@@ -1,3 +1,4 @@
+"use client";
 import {
   Modal,
   ModalClose,
@@ -7,8 +8,47 @@ import {
   Textarea,
   Button,
 } from "@mui/joy";
+import { useState } from "react";
 
 export default function AboutMeModal({ open, close }) {
+  const [about, setAbout] = useState("");
+
+  const handleChange = (e) => {
+    setAbout(e.target.value);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_HOST_IP}/api/profile/update/post-about`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ about }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message || "Something went wrong");
+        return;
+      }
+
+      alert(data.message);
+      // Reset Form
+      setAbout("");
+      close();
+    } catch (err) {
+      console.error(err);
+      alert("Network error. Please try again.");
+    }
+  };
   return (
     <Modal open={open} onClose={close}>
       <ModalDialog
@@ -39,11 +79,13 @@ export default function AboutMeModal({ open, close }) {
           </Typography>
         </Box>
 
-        <Box component="form" sx={{ px: 3, py: 2 }}>
+        <Box component="form" sx={{ px: 3, py: 2 }} onSubmit={handleSubmit}>
           <Textarea
             name="about"
             minRows={5}
             placeholder="Add something about yourself......"
+            onChange={handleChange}
+            value={about}
           />
 
           {/* 🔹 Footer */}

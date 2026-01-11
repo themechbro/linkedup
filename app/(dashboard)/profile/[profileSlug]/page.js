@@ -3,7 +3,7 @@ import { Box } from "@mui/joy";
 import ProfileFirst from "./components/first-card";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-
+import AboutCard from "./components/about-card";
 export default function ViewProfilePage({ params }) {
   const path = usePathname();
   const user_id = path.split("/")[2]?.trim();
@@ -47,7 +47,12 @@ export default function ViewProfilePage({ params }) {
         backgroundColor: "#F4F2EE",
       }}
     >
-      <ProfileFirst profile={data} requestedBy={byWho} isLoading={loading} />
+      <Box sx={{ mb: 3 }}>
+        <ProfileFirst profile={data} requestedBy={byWho} isLoading={loading} />
+      </Box>
+      <Box sx={{ mb: 3 }}>
+        <AboutCard profile={data} requestedBy={byWho} isLoading={loading} />
+      </Box>
     </Box>
   );
 }
