@@ -6,6 +6,10 @@ import {
   Languages,
   Award,
   Info,
+  Globe,
+  Factory,
+  Building2,
+  MapPin,
 } from "lucide-react";
 
 export const core = [
@@ -39,5 +43,31 @@ export const additional = [
   {
     name: "Add Honors & Awards",
     icon: <Award />,
+  },
+];
+
+export const coreBrands = [
+  {
+    name: "Overview", //in About column of users
+    icon: <Info />,
+  },
+  {
+    name: "Website",
+    icon: <Globe />,
+  },
+  {
+    name: "Industry",
+    icon: <Factory />,
+  },
+  {
+    name: "Company Size and Headquarters",
+    icon: <Building2 />,
+  },
+];
+
+export const additionalBrands = [
+  {
+    name: "Location",
+    icon: <MapPin />,
   },
 ];

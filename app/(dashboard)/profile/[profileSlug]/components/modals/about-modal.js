@@ -10,8 +10,8 @@ import {
 } from "@mui/joy";
 import { useState } from "react";
 
-export default function AboutMeModal({ open, close }) {
-  const [about, setAbout] = useState("");
+export default function AboutMeModal({ open, close, prevAbout, type }) {
+  const [about, setAbout] = useState(prevAbout);
 
   const handleChange = (e) => {
     setAbout(e.target.value);
@@ -75,7 +75,7 @@ export default function AboutMeModal({ open, close }) {
           }}
         >
           <Typography level="h4" fontWeight={600}>
-            About Me
+            {type === "normal" ? "About Me" : "Overview"}
           </Typography>
         </Box>
 

@@ -13,16 +13,21 @@ import {
   ListItemButton,
   ListItemDecorator,
 } from "@mui/joy";
-import { core, additional } from "./list-options";
+import { core, additional, coreBrands, additionalBrands } from "./list-options";
 import { useState } from "react";
-import EducationModal from "./education-modal";
-import AboutMeModal from "./about-modal";
+import EducationModal from "../modals/normal/education-modal";
+import AboutMeModal from "../modals/about-modal";
+import WebsiteAdderModal from "../modals/brands/add-website-modal";
+import IndustryAdderModal from "../modals/brands/industry-modal";
 
-export default function AddProfileSectionModal({ open, close }) {
+export default function AddProfileSectionModal({ open, close, type }) {
   const [eduModal, setEduModal] = useState(false);
   const [workModal, setWorkModal] = useState(false);
   const [skillModal, setSkillModal] = useState(false);
   const [aboutModal, setAboutModal] = useState(false);
+  const [webModal, setWebModal] = useState(false);
+  const [indModal, setIndModal] = useState(false);
+  const [comphqModal, setComphqModal] = useState(false);
 
   const handleCoreClick = (name) => {
     if (name === "Add Education") {
@@ -33,6 +38,18 @@ export default function AddProfileSectionModal({ open, close }) {
       setSkillModal(true);
     } else if (name == "About me") {
       setAboutModal(true);
+    }
+  };
+
+  const handleBrandClick = (name) => {
+    if (name === "Overview") {
+      setAboutModal(true);
+    } else if (name === "Website") {
+      setWebModal(true);
+    } else if (name === "Industry") {
+      setIndModal(true);
+    } else if (name == "Company Size and Headquarters") {
+      setComphqModal(true);
     }
   };
 
@@ -49,6 +66,7 @@ export default function AddProfileSectionModal({ open, close }) {
 
           <Box className="options">
             <AccordionGroup>
+              {/* Core */}
               <Accordion>
                 <AccordionSummary>
                   <Typography
@@ -58,27 +76,53 @@ export default function AddProfileSectionModal({ open, close }) {
                     Core
                   </Typography>
                 </AccordionSummary>
-                <AccordionDetails>
-                  <List>
-                    {core.map((items, index) => {
-                      return (
-                        <ListItemButton
-                          key={index}
-                          onClick={() => {
-                            handleCoreClick(items.name);
-                          }}
-                        >
-                          <ListItemDecorator>{items.icon}</ListItemDecorator>
-                          <Typography sx={{ fontFamily: "Roboto Condensed" }}>
-                            {items.name}
-                          </Typography>
-                        </ListItemButton>
-                      );
-                    })}
-                  </List>
-                </AccordionDetails>
+
+                {type === "normal" ? (
+                  <AccordionDetails>
+                    <List>
+                      {core.map((items, index) => {
+                        return (
+                          <ListItemButton
+                            key={index}
+                            onClick={() => {
+                              handleCoreClick(items.name);
+                            }}
+                          >
+                            <ListItemDecorator>{items.icon}</ListItemDecorator>
+                            <Typography sx={{ fontFamily: "Roboto Condensed" }}>
+                              {items.name}
+                            </Typography>
+                          </ListItemButton>
+                        );
+                      })}
+                    </List>
+                  </AccordionDetails>
+                ) : null}
+
+                {type === "brand" ? (
+                  <AccordionDetails>
+                    <List>
+                      {coreBrands.map((items, index) => {
+                        return (
+                          <ListItemButton
+                            key={index}
+                            onClick={() => {
+                              handleBrandClick(items.name);
+                            }}
+                          >
+                            <ListItemDecorator>{items.icon}</ListItemDecorator>
+                            <Typography sx={{ fontFamily: "Roboto Condensed" }}>
+                              {items.name}
+                            </Typography>
+                          </ListItemButton>
+                        );
+                      })}
+                    </List>
+                  </AccordionDetails>
+                ) : null}
               </Accordion>
 
+              {/* Additional */}
               <Accordion>
                 <AccordionSummary>
                   {" "}
@@ -89,20 +133,39 @@ export default function AddProfileSectionModal({ open, close }) {
                     Additional
                   </Typography>
                 </AccordionSummary>
-                <AccordionDetails>
-                  <List>
-                    {additional.map((items, index) => {
-                      return (
-                        <ListItemButton key={index}>
-                          <ListItemDecorator>{items.icon}</ListItemDecorator>
-                          <Typography sx={{ fontFamily: "Roboto Condensed" }}>
-                            {items.name}
-                          </Typography>
-                        </ListItemButton>
-                      );
-                    })}
-                  </List>
-                </AccordionDetails>
+
+                {type === "normal" ? (
+                  <AccordionDetails>
+                    <List>
+                      {additional.map((items, index) => {
+                        return (
+                          <ListItemButton key={index}>
+                            <ListItemDecorator>{items.icon}</ListItemDecorator>
+                            <Typography sx={{ fontFamily: "Roboto Condensed" }}>
+                              {items.name}
+                            </Typography>
+                          </ListItemButton>
+                        );
+                      })}
+                    </List>
+                  </AccordionDetails>
+                ) : null}
+                {type === "brand" ? (
+                  <AccordionDetails>
+                    <List>
+                      {additionalBrands.map((items, index) => {
+                        return (
+                          <ListItemButton key={index}>
+                            <ListItemDecorator>{items.icon}</ListItemDecorator>
+                            <Typography sx={{ fontFamily: "Roboto Condensed" }}>
+                              {items.name}
+                            </Typography>
+                          </ListItemButton>
+                        );
+                      })}
+                    </List>
+                  </AccordionDetails>
+                ) : null}
               </Accordion>
             </AccordionGroup>
           </Box>
@@ -120,6 +183,20 @@ export default function AddProfileSectionModal({ open, close }) {
         open={aboutModal}
         close={() => {
           setAboutModal(false);
+        }}
+        type={type === "normal" ? "normal" : "brand"}
+      />
+
+      <WebsiteAdderModal
+        open={webModal}
+        close={() => {
+          setWebModal(false);
+        }}
+      />
+      <IndustryAdderModal
+        open={indModal}
+        close={() => {
+          setIndModal(false);
         }}
       />
     </>
