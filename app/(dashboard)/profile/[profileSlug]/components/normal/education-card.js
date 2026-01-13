@@ -11,8 +11,8 @@ import {
 } from "@mui/joy";
 import { BriefcaseBusiness, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { fetchEdu } from "../lib/helpers";
-import EducationModal from "./modals/normal/education-modal";
+import { fetchEdu } from "../../lib/helpers";
+import EducationModal from "../modals/normal/education-modal";
 
 export default function EducationCard({ profile }) {
   const [fetchedEdu, setFetchedEdu] = useState(null);

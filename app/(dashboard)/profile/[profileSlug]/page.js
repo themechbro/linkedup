@@ -3,8 +3,9 @@ import { Box } from "@mui/joy";
 import ProfileFirst from "./components/first-card";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import AboutCard from "./components/about-card";
-import EducationCard from "./components/education-card";
+import AboutCard from "./components/normal/about-card";
+import EducationCard from "./components/normal/education-card";
+import TabforProfileBrands from "./components/brands/tablist";
 export default function ViewProfilePage({ params }) {
   const path = usePathname();
   const user_id = path.split("/")[2]?.trim();

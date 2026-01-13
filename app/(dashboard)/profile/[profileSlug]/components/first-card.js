@@ -18,6 +18,7 @@ import profileFallback from "@/public/assets/fallback/images.png";
 import coverFallback from "@/public/assets/fallback/images-cover.png";
 import { Check, X } from "lucide-react";
 import AddProfileSectionModal from "./add-profile-section/add-profile-section-modal";
+import TabforProfileBrands from "./brands/tablist";
 
 export default function ProfileFirst({ profile, requestedBy, isLoading }) {
   const router = useRouter();
@@ -531,6 +532,20 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
             </Box>
           )}
         </Box>
+
+        {profile.isBrand ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              mt: 5.5,
+              bottom: 0,
+            }}
+          >
+            <TabforProfileBrands />
+          </Box>
+        ) : null}
       </Box>
 
       {/* Modal for uploading */}
@@ -569,6 +584,7 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
           setOpenAddSection(false);
         }}
         type={profile.isBrand ? "brand" : "normal"}
+        requestedBy={requestedBy}
       />
     </Card>
   );

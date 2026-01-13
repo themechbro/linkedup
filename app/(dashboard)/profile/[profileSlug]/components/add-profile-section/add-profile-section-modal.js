@@ -20,7 +20,12 @@ import AboutMeModal from "../modals/about-modal";
 import WebsiteAdderModal from "../modals/brands/add-website-modal";
 import IndustryAdderModal from "../modals/brands/industry-modal";
 
-export default function AddProfileSectionModal({ open, close, type }) {
+export default function AddProfileSectionModal({
+  open,
+  close,
+  type,
+  requestedBy,
+}) {
   const [eduModal, setEduModal] = useState(false);
   const [workModal, setWorkModal] = useState(false);
   const [skillModal, setSkillModal] = useState(false);
@@ -192,12 +197,14 @@ export default function AddProfileSectionModal({ open, close, type }) {
         close={() => {
           setWebModal(false);
         }}
+        owner={requestedBy}
       />
       <IndustryAdderModal
         open={indModal}
         close={() => {
           setIndModal(false);
         }}
+        owner={requestedBy}
       />
     </>
   );

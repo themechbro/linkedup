@@ -12,7 +12,52 @@ import {
 import { useState } from "react";
 
 // Backend wiring left
-export default function WebsiteAdderModal({ open, close }) {
+export default function WebsiteAdderModal({ open, close, owner }) {
+  const [website, setWebsite] = useState("");
+  const [loading, setLoading] = useState(false);
+  const OwneruserId = owner.meta.user_id;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!website.trim()) {
+      alert("Website cannot be empty");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_HOST_IP_MICRO}/api/profile/update-website/${OwneruserId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ website }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message || "Failed to update website");
+        return;
+      }
+
+      alert(data.message);
+      setWebsite("");
+      close();
+    } catch (err) {
+      console.error(err);
+      alert("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Modal open={open} onClose={close}>
       <ModalDialog
@@ -45,10 +90,15 @@ export default function WebsiteAdderModal({ open, close }) {
           </Typography>
         </Box>
 
-        <Box component="form" sx={{ px: 3, py: 2 }}>
+        <Box component="form" sx={{ px: 3, py: 2 }} onSubmit={handleSubmit}>
           <FormControl required>
             <FormLabel>Add Website</FormLabel>
-            <Input type="text" placeholder="Add your weblink here......" />
+            <Input
+              type="text"
+              placeholder="Add your weblink here......"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+            />
           </FormControl>
           {/* Footer */}
           <Box

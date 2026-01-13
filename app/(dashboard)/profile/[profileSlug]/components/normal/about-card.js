@@ -3,8 +3,9 @@
 import { Card, CardContent, Box, Typography, IconButton } from "@mui/joy";
 import { Info, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
-import { fetchAbout } from "../lib/helpers";
-import AboutMeModal from "./modals/about-modal";
+import { fetchAbout } from "../../lib/helpers";
+import AboutMeModal from "../modals/about-modal";
+
 export default function AboutCard({ profile, requestedBy, isLoading }) {
   const [fetchedAbout, setFetchedAbout] = useState(null);
   const [openModal, setOpenModal] = useState(false);
