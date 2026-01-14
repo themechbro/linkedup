@@ -15,7 +15,7 @@ import { useState } from "react";
 export default function WebsiteAdderModal({ open, close, owner }) {
   const [website, setWebsite] = useState("");
   const [loading, setLoading] = useState(false);
-  const OwneruserId = owner.meta.user_id;
+  const OwneruserId = owner?.meta?.user_id;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,7 +29,7 @@ export default function WebsiteAdderModal({ open, close, owner }) {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_IP_MICRO}/api/profile/update-website/${OwneruserId}`,
+        `${process.env.NEXT_PUBLIC_HOST_IP}/api/profile/update/post-website`,
         {
           method: "POST",
           headers: {

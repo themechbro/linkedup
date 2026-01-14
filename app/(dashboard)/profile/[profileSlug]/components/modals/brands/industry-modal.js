@@ -16,7 +16,7 @@ import { industryList } from "./list";
 export default function IndustryAdderModal({ open, close, owner }) {
   const [industry, setIndustry] = useState("");
   const [loading, setLoading] = useState(false);
-  const OwneruserId = owner.meta.user_id;
+  const OwneruserId = owner?.meta?.user_id;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,7 +30,7 @@ export default function IndustryAdderModal({ open, close, owner }) {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_IP_MICRO}/api/profile/update-industry/${OwneruserId}`,
+        `${process.env.NEXT_PUBLIC_HOST_IP}/api/profile/update/post-industry`,
         {
           method: "POST",
           headers: {
