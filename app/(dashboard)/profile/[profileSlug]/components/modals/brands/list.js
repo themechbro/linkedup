@@ -421,3 +421,15 @@ export const industryList = [
   "Writing and Editing",
   "Zoos and Botanical Gardens",
 ];
+
+export const companySize = [
+  { label: "Self-employed", value: "self_employed" },
+  { label: "1–10 employees", value: "1_10" },
+  { label: "11–50 employees", value: "11_50" },
+  { label: "51–200 employees", value: "51_200" },
+  { label: "201–500 employees", value: "201_500" },
+  { label: "501–1,000 employees", value: "501_1000" },
+  { label: "1,001–5,000 employees", value: "1001_5000" },
+  { label: "5,001–10,000 employees", value: "5001_10000" },
+  { label: "10,000+ employees", value: "10000_plus" },
+];

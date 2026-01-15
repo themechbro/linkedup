@@ -532,20 +532,6 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
             </Box>
           )}
         </Box>
-
-        {profile.isBrand ? (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              mt: 5.5,
-              bottom: 0,
-            }}
-          >
-            <TabforProfileBrands />
-          </Box>
-        ) : null}
       </Box>
 
       {/* Modal for uploading */}

@@ -19,6 +19,7 @@ import EducationModal from "../modals/normal/education-modal";
 import AboutMeModal from "../modals/about-modal";
 import WebsiteAdderModal from "../modals/brands/add-website-modal";
 import IndustryAdderModal from "../modals/brands/industry-modal";
+import CompanyhQModal from "../modals/brands/company&hq-modal";
 
 export default function AddProfileSectionModal({
   open,
@@ -203,6 +204,13 @@ export default function AddProfileSectionModal({
         open={indModal}
         close={() => {
           setIndModal(false);
+        }}
+        owner={requestedBy}
+      />
+      <CompanyhQModal
+        open={comphqModal}
+        close={() => {
+          setComphqModal(false);
         }}
         owner={requestedBy}
       />

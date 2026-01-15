@@ -8,46 +8,53 @@ import {
   Button,
   FormControl,
   FormLabel,
+  Autocomplete,
 } from "@mui/joy";
 import { useState } from "react";
-
-export default function WebsiteAdderModal({ open, close, owner }) {
-  const [website, setWebsite] = useState("");
+import { companySize } from "./list";
+export default function CompanyhQModal({ open, close, owner }) {
+  const [comp, setComp] = useState(null);
+  const [hq, setHq] = useState("");
   const [loading, setLoading] = useState(false);
   const OwneruserId = owner?.meta?.user_id;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!website.trim()) {
-      alert("Website cannot be empty");
+    if (!comp) {
+      alert("Company Size cannot be empty");
       return;
     }
 
+    if (!hq.trim()) {
+      alert("Headquarters field cannot be empty");
+      return;
+    }
     setLoading(true);
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_IP}/api/profile/update/post-website`,
+        `${process.env.NEXT_PUBLIC_HOST_IP}/api/profile/update/post-company-hq`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           credentials: "include",
-          body: JSON.stringify({ website }),
+          body: JSON.stringify({ companysize: comp?.label, hq: hq }),
         }
       );
 
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.message || "Failed to update website");
+        alert(data.message || "Failed to update Company Size and Headquarters");
         return;
       }
 
       alert(data.message);
-      setWebsite("");
+      setComp("");
+      setHq("");
       close();
     } catch (err) {
       console.error(err);
@@ -85,18 +92,32 @@ export default function WebsiteAdderModal({ open, close, owner }) {
             fontWeight={600}
             sx={{ fontFamily: "Roboto Condensed" }}
           >
-            Add Company Website
+            Add Company Size and Headquarters
           </Typography>
         </Box>
 
         <Box component="form" sx={{ px: 3, py: 2 }} onSubmit={handleSubmit}>
-          <FormControl required>
-            <FormLabel>Add Website</FormLabel>
+          <FormControl required sx={{ m: 2 }}>
+            <FormLabel>Add Headquarters</FormLabel>
             <Input
               type="text"
-              placeholder="Add your weblink here......"
-              value={website}
-              onChange={(e) => setWebsite(e.target.value)}
+              placeholder="Where your HQ is located?"
+              value={hq}
+              onChange={(e) => setHq(e.target.value)}
+            />
+          </FormControl>
+
+          <FormControl required sx={{ m: 2 }}>
+            <FormLabel>Add Company Size</FormLabel>
+            <Autocomplete
+              placeholder="Select your company size"
+              options={companySize}
+              getOptionLabel={(option) => option.label}
+              clearOnEscape
+              autoHighlight
+              sx={{ width: "100%" }}
+              value={comp}
+              onChange={(e, value) => setComp(value)}
             />
           </FormControl>
           {/* Footer */}
