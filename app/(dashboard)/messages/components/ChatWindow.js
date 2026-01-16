@@ -14,6 +14,8 @@ import { Send, ArrowLeft, MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Fab } from "@mui/material";
 import { MoveDown, Heart } from "lucide-react";
+import { getSocket } from "./utils/socket";
+import TypingIndicator from "./typingIndicator";
 
 export default function ChatWindow({ userId, onBack, onNewMessage }) {
   const [messages, setMessages] = useState([]);
@@ -24,9 +26,70 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const router = useRouter();
   const isInitialLoad = useRef(true);
+  const typingTimeoutRef = useRef(null);
   const [currUser, setCurrUser] = useState({});
+  const socket = getSocket();
+
+  //Socket
+  useEffect(() => {
+    socket.connect();
+
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Socket disconnected");
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+    };
+  }, []);
+
+  // Typing - COMES AFTER CONNECTION
+  useEffect(() => {
+    if (!socket.connected) {
+      return;
+    }
+
+    const handleTypingStart = ({ from }) => {
+      if (from === userId) {
+        setIsTyping(true);
+      }
+    };
+
+    const handleTypingStop = ({ from }) => {
+      if (from === userId) {
+        setIsTyping(false);
+      }
+    };
+
+    socket.on("typing_start", handleTypingStart);
+    socket.on("typing_stop", handleTypingStop);
+
+    return () => {
+      socket.off("typing_start", handleTypingStart);
+      socket.off("typing_stop", handleTypingStop);
+    };
+  }, [userId, socket.connected]);
+
+  // useEffect(() => {
+  //   console.log("🟢 isTyping state changed to:", isTyping);
+  // }, [isTyping]);
+
+  // Safety
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (userId) {
@@ -70,6 +133,20 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
     fetchUser();
   }, []);
 
+  // Typing Call
+  const handleTyping = (value) => {
+    setNewMessage(value);
+    socket.emit("typing_start", { to: userId });
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("typing_stop", { to: userId });
+    }, 800);
+  };
+
   const fetchMessages = async () => {
     try {
       const res = await fetch(
@@ -102,6 +179,52 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
     }
   };
 
+  // const handleSend = async (e) => {
+  //   e.preventDefault();
+  //   if (!newMessage.trim() || sending) return;
+
+  //   setSending(true);
+  //   const messageText = newMessage.trim();
+  //   setNewMessage("");
+
+  //   try {
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_HOST_IP}/api/messages/send_new_message`,
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         credentials: "include",
+  //         body: JSON.stringify({
+  //           receiver_id: userId,
+  //           content: messageText,
+  //         }),
+  //       }
+  //     );
+
+  //     const data = await res.json();
+
+  //     if (data.success) {
+  //       // Add message to list immediately (optimistic update)
+  //       setMessages((prev) => [...prev, data.message]);
+  //       onNewMessage(userId);
+  //     } else {
+  //       console.error("Send failed:", data.message);
+  //       alert(data.message); // Show error to user
+  //       setNewMessage(messageText); // Restore message
+  //     }
+  //   } catch (err) {
+  //     console.error("Error sending message:", err);
+  //     alert("Failed to send message. Please try again.");
+  //     setNewMessage(messageText); // Restore message on error
+  //   } finally {
+  //     setSending(false);
+  //   }
+  // };
+
+  // const scrollToBottom = () => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // };
+
   const handleSend = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || sending) return;
@@ -125,29 +248,19 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
       );
 
       const data = await res.json();
-      console.log("Send message response:", data); // 👈 ADD THIS FOR DEBUGGING
 
-      if (data.success) {
-        // Add message to list immediately (optimistic update)
-        setMessages((prev) => [...prev, data.message]);
-        onNewMessage(userId);
-      } else {
-        console.error("Send failed:", data.message);
-        alert(data.message); // Show error to user
-        setNewMessage(messageText); // Restore message
+      if (!data.success) {
+        alert(data.message);
+        setNewMessage(messageText); // restore on failure
       }
     } catch (err) {
       console.error("Error sending message:", err);
       alert("Failed to send message. Please try again.");
-      setNewMessage(messageText); // Restore message on error
+      setNewMessage(messageText);
     } finally {
       setSending(false);
     }
   };
-
-  // const scrollToBottom = () => {
-  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  // };
 
   const formatMessageTime = (timestamp) => {
     const date = new Date(timestamp);
@@ -198,33 +311,6 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
-  // double click
-  // const handledoubleClick = async (msg_id) => {
-  //   console.log(currUser?.meta?.user_id);
-
-  //   try {
-  //     const response = await fetch(
-  //       `${process.env.NEXT_PUBLIC_HOST_IP_MICRO}/api/message_micro/likeMessage/${msg_id}`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         credentials: "include",
-  //         body: JSON.stringify({
-  //           likedBy: currUser?.meta?.user_id,
-  //         }),
-  //       }
-  //     );
-
-  //     if (response.ok) {
-  //       console.log("message liked successfully");
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
 
   const handledoubleClick = async (msg_id) => {
     const userId = currUser?.meta?.user_id;
@@ -499,12 +585,14 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
           backgroundColor: "white",
         }}
       >
+        {isTyping && <TypingIndicator otherUser={otherUser} />}
         <form onSubmit={handleSend}>
           <Box sx={{ display: "flex", gap: 1, alignItems: "flex-end" }}>
             <Input
               placeholder="Write a message..."
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
+              // onChange={(e) => setNewMessage(e.target.value)}
+              onChange={(e) => handleTyping(e.target.value)}
               disabled={sending}
               sx={{
                 flex: 1,
