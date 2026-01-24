@@ -1,407 +1,3 @@
-// "use client";
-// import { useEffect, useState } from "react";
-// import { Box, CircularProgress, Divider, Typography } from "@mui/joy";
-// import PostCard from "./postCard";
-
-// export default function PostFeed() {
-//   const [posts, setPosts] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-
-//   // 🔹 Fetch posts from backend
-//   useEffect(() => {
-//     const fetchPosts = async () => {
-//       try {
-//         const res = await fetch(
-//           `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts`,
-//           {
-//             credentials: "include",
-//             cache: "no-store", // ensures fresh data every time
-//           }
-//         );
-//         if (!res.ok) throw new Error("Failed to fetch posts");
-
-//         const data = await res.json();
-//         setPosts(data);
-//       } catch (err) {
-//         console.error("Error fetching posts:", err);
-//         setError(err.message);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchPosts();
-//   }, []);
-
-//   // 🔹 Loading state
-//   if (loading)
-//     return (
-//       <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-//         <CircularProgress />
-//       </Box>
-//     );
-
-//   // 🔹 Error state
-//   if (error)
-//     return (
-//       <Typography color="danger" sx={{ textAlign: "center", mt: 3 }}>
-//         ⚠️ {error}
-//       </Typography>
-//     );
-
-//   // 🔹 Empty state
-//   if (posts.length === 0)
-//     return (
-//       <Typography level="body-lg" sx={{ textAlign: "center", mt: 3 }}>
-//         No posts yet. Be the first to post something!
-//       </Typography>
-//     );
-
-//   // 🔹 Render feed
-//   return (
-//     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-//       {posts.map((post) => (
-//         <PostCard key={post.id} post={post} />
-//       ))}
-
-//       <Divider>
-//         <Typography
-//           sx={{
-//             fontFamily: "Roboto Condensed",
-//           }}
-//         >
-//           You have caught everything for now
-//         </Typography>
-//       </Divider>
-//     </Box>
-//   );
-// }
-
-// 2nd version
-
-// "use client";
-// import { useEffect, useState, useRef, useCallback } from "react";
-// import { Box, CircularProgress, Divider, Typography } from "@mui/joy";
-// import PostCard from "./postCard";
-
-// export default function PostFeed() {
-//   const LIMIT = 10;
-
-//   const [posts, setPosts] = useState([]);
-//   const [loadingInitial, setLoadingInitial] = useState(true);
-//   const [loadingMore, setLoadingMore] = useState(false);
-//   const [hasMore, setHasMore] = useState(true);
-//   const isFetchingRef = useRef(false); // prevents duplicate fetches
-//   const observerRef = useRef(null);
-
-//   // fetch with explicit offset (derived from posts.length)
-//   const fetchPosts = async (offset) => {
-//     if (isFetchingRef.current) return;
-//     isFetchingRef.current = true;
-
-//     // toggle appropriate loading flag
-//     if (offset === 0) setLoadingInitial(true);
-//     else setLoadingMore(true);
-
-//     try {
-//       const res = await fetch(
-//         `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts?limit=${LIMIT}&offset=${offset}`,
-//         {
-//           credentials: "include",
-//           cache: "no-store",
-//         }
-//       );
-
-//       if (!res.ok) throw new Error("Failed to fetch posts");
-
-//       const data = await res.json();
-
-//       // append or replace depending on offset
-//       setPosts((prev) => (offset === 0 ? data : [...prev, ...data]));
-
-//       // if fewer than limit returned -> no more pages
-//       if (data.length < LIMIT) {
-//         setHasMore(false);
-//       }
-//     } catch (err) {
-//       console.error("Error fetching posts:", err);
-//       // Optionally set an error state here
-//       setHasMore(false);
-//     } finally {
-//       isFetchingRef.current = false;
-//       if (offset === 0) setLoadingInitial(false);
-//       else setLoadingMore(false);
-//     }
-//   };
-
-//   // load initial page
-//   useEffect(() => {
-//     fetchPosts(0);
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, []);
-
-//   // IntersectionObserver callback — compute offset from posts.length
-//   const lastElementRef = useCallback(
-//     (node) => {
-//       if (loadingMore || loadingInitial) return;
-//       if (!hasMore) return;
-
-//       // disconnect previous observer
-//       if (observerRef.current) observerRef.current.disconnect();
-
-//       observerRef.current = new IntersectionObserver(
-//         (entries) => {
-//           if (entries[0].isIntersecting && !isFetchingRef.current && hasMore) {
-//             // compute offset from current posts length -> avoids stale state
-//             const offset = posts.length;
-//             fetchPosts(offset);
-//           }
-//         },
-//         {
-//           root: null,
-//           rootMargin: "200px", // start loading a bit before bottom
-//           threshold: 0.1,
-//         }
-//       );
-
-//       if (node) observerRef.current.observe(node);
-//     },
-//     // include posts.length because we derive offset from it
-//     [loadingMore, loadingInitial, hasMore, posts.length]
-//   );
-
-//   // Loading initial
-//   if (loadingInitial)
-//     return (
-//       <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-//         <CircularProgress />
-//       </Box>
-//     );
-
-//   if (posts.length === 0)
-//     return (
-//       <Typography level="body-lg" sx={{ textAlign: "center", mt: 3 }}>
-//         No posts yet. Be the first to post something!
-//       </Typography>
-//     );
-
-//   return (
-//     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-//       {posts.map((post, index) => {
-//         const isLast = index === posts.length - 1;
-//         if (isLast) {
-//           // attach observer to a wrapper so the List item itself doesn't re-render the ref too often
-//           return (
-//             <div key={post.id} ref={lastElementRef}>
-//               <PostCard post={post} />
-//             </div>
-//           );
-//         }
-//         return (
-//           <PostCard
-//             key={post.id}
-//             post={post}
-//             loadingIni={loadingInitial}
-//             onPostDeleted={(id) => {
-//               setPosts((prev) => prev.filter((p) => p.id !== id));
-//             }}
-//           />
-//         );
-//       })}
-
-//       {loadingMore && (
-//         <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
-//           <CircularProgress size="sm" />
-//         </Box>
-//       )}
-
-//       {!hasMore && (
-//         <Divider>
-//           <Typography sx={{ fontFamily: "Roboto Condensed" }}>
-//             You’re all caught up 🎉
-//           </Typography>
-//         </Divider>
-//       )}
-//     </Box>
-//   );
-// }
-
-// 3rd version
-// "use client";
-// import { useEffect, useState, useRef, useCallback } from "react";
-// import { Box, CircularProgress, Divider, Typography } from "@mui/joy";
-// import PostCard from "./postCard";
-
-// export default function PostFeed() {
-//   const LIMIT = 10;
-
-//   const [posts, setPosts] = useState([]);
-//   const [loadingInitial, setLoadingInitial] = useState(true);
-//   const [loadingMore, setLoadingMore] = useState(false);
-//   const [hasMore, setHasMore] = useState(true);
-
-//   const isFetchingRef = useRef(false);
-//   const observerRef = useRef(null);
-//   const sentinelRef = useRef(null); // ← The stable scroll trigger
-
-//   const fetchPosts = async (offset) => {
-//     console.log(
-//       "🔍 Fetch triggered - Offset:",
-//       offset,
-//       "Current posts:",
-//       posts.length
-//     ); // 👈 ADD THIS
-//     if (isFetchingRef.current) {
-//       console.log("⚠️ Already fetching, skipping...");
-//       return;
-//     }
-//     isFetchingRef.current = true;
-
-//     if (offset === 0) setLoadingInitial(true);
-//     else setLoadingMore(true);
-
-//     try {
-//       const res = await fetch(
-//         `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts?limit=${LIMIT}&offset=${offset}`,
-//         {
-//           credentials: "include",
-//           cache: "no-store",
-//         }
-//       );
-
-//       if (!res.ok) throw new Error("Failed to fetch posts");
-
-//       const data = await res.json();
-
-//       setPosts((prev) => {
-//         if (offset === 0) {
-//           return data; // Fresh load, replace everything
-//         }
-
-//         // 👇 IMPROVED DEDUPLICATION
-//         const existingIds = new Set(prev.map((p) => p.id));
-//         const uniqueNew = data.filter((p) => !existingIds.has(p.id));
-
-//         // 👇 ALSO CHECK: if NO new unique posts, don't add anything
-//         if (uniqueNew.length === 0) {
-//           return prev;
-//         }
-
-//         return [...prev, ...uniqueNew];
-//       });
-
-//       if (data.length < LIMIT) {
-//         setHasMore(false);
-//       }
-//     } catch (err) {
-//       console.error("Error fetching posts:", err);
-//       setHasMore(false);
-//     } finally {
-//       isFetchingRef.current = false;
-//       if (offset === 0) setLoadingInitial(false);
-//       else setLoadingMore(false);
-//     }
-//   };
-
-//   // Load first page
-//   useEffect(() => {
-//     fetchPosts(0);
-//   }, []);
-
-//   const initiateObserver = useCallback(() => {
-//     if (observerRef.current) observerRef.current.disconnect();
-
-//     observerRef.current = new IntersectionObserver(
-//       (entries) => {
-//         const first = entries[0];
-//         if (
-//           first.isIntersecting &&
-//           !isFetchingRef.current &&
-//           hasMore &&
-//           !loadingMore &&
-//           !loadingInitial &&
-//           posts.length > 0 // 👈 ADD THIS CHECK
-//         ) {
-//           fetchPosts(posts.length);
-//         }
-//       },
-//       {
-//         root: null,
-//         rootMargin: "200px",
-//         threshold: 0,
-//       }
-//     );
-
-//     if (sentinelRef.current) {
-//       observerRef.current.observe(sentinelRef.current);
-//     }
-//   }, [posts.length, hasMore, loadingInitial, loadingMore]);
-
-//   // Recreate observer when post count changes
-//   useEffect(() => {
-//     initiateObserver();
-//   }, [initiateObserver]);
-
-//   // -----------------------------------------------
-//   // UI
-//   // -----------------------------------------------
-//   if (loadingInitial)
-//     return (
-//       <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-//         <CircularProgress />
-//       </Box>
-//     );
-
-//   if (posts.length === 0)
-//     return (
-//       <Typography level="body-lg" sx={{ textAlign: "center", mt: 3 }}>
-//         No posts yet. Be the first to post something!
-//       </Typography>
-//     );
-
-//   return (
-//     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-//       {posts.map((post) => (
-//         <PostCard
-//           key={post.id}
-//           post={post}
-//           loadingIni={loadingInitial}
-//           onPostDeleted={(id) => {
-//             setPosts((prev) => prev.filter((p) => p.id !== id));
-//           }}
-//           onConnectionStatusChanged={(userId, newStatus) => {
-//             // 👇 Update ALL posts from this user
-//             setPosts((prev) =>
-//               prev.map((p) =>
-//                 p.owner === userId ? { ...p, connection_status: newStatus } : p
-//               )
-//             );
-//             fetchPosts();
-//           }}
-//         />
-//       ))}
-
-//       {/* 👇 The stable scroll sentinel */}
-//       <div ref={sentinelRef} style={{ height: "1px" }} />
-
-//       {loadingMore && (
-//         <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
-//           <CircularProgress size="sm" />
-//         </Box>
-//       )}
-
-//       {!hasMore && (
-//         <Divider>
-//           <Typography sx={{ fontFamily: "Roboto Condensed" }}>
-//             You’re all caught up 🎉
-//           </Typography>
-//         </Divider>
-//       )}
-//     </Box>
-//   );
-// }
-
 // 4th Version
 "use client";
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -417,6 +13,7 @@ import { RefreshCw } from "lucide-react";
 import PostCard from "./postCard";
 
 export default function PostFeed() {
+  const FEED_MODE = "micro";
   const LIMIT = 10;
   const REFRESH_INTERVAL = 30000; // 30 seconds
 
@@ -435,62 +32,196 @@ export default function PostFeed() {
   // -------------------------------------------------------
   // Fetch posts
   // -------------------------------------------------------
-  const fetchPosts = async (offset) => {
-    console.log(
-      "🔍 Fetch triggered - Offset:",
-      offset,
-      "Current posts:",
-      posts.length
-    );
+  // const fetchPosts = async (offset) => {
+  //   console.log(
+  //     "🔍 Fetch triggered - Offset:",
+  //     offset,
+  //     "Current posts:",
+  //     posts.length,
+  //   );
 
-    if (isFetchingRef.current) {
-      console.log("⚠️ Already fetching, skipping...");
-      return;
-    }
+  //   if (isFetchingRef.current) {
+  //     console.log("⚠️ Already fetching, skipping...");
+  //     return;
+  //   }
+  //   isFetchingRef.current = true;
+
+  //   if (offset === 0) setLoadingInitial(true);
+  //   else setLoadingMore(true);
+
+  //   try {
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts?limit=${LIMIT}&offset=${offset}`,
+  //       {
+  //         credentials: "include",
+  //         cache: "no-store",
+  //       },
+  //     );
+
+  //     if (!res.ok) throw new Error("Failed to fetch posts");
+
+  //     const data = await res.json();
+
+  //     setPosts((prev) => {
+  //       if (offset === 0) {
+  //         return data;
+  //       }
+
+  //       const existingIds = new Set(prev.map((p) => p.id));
+  //       const uniqueNew = data.filter((p) => !existingIds.has(p.id));
+
+  //       if (uniqueNew.length === 0) {
+  //         return prev;
+  //       }
+
+  //       return [...prev, ...uniqueNew];
+  //     });
+
+  //     if (data.length < LIMIT) {
+  //       setHasMore(false);
+  //     }
+  //   } catch (err) {
+  //     console.error("Error fetching posts:", err);
+  //     setHasMore(false);
+  //   } finally {
+  //     isFetchingRef.current = false;
+  //     if (offset === 0) setLoadingInitial(false);
+  //     else setLoadingMore(false);
+  //   }
+  // };
+
+  const fetchPosts = async (offset) => {
+    if (isFetchingRef.current) return;
     isFetchingRef.current = true;
 
     if (offset === 0) setLoadingInitial(true);
     else setLoadingMore(true);
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts?limit=${LIMIT}&offset=${offset}`,
-        {
-          credentials: "include",
-          cache: "no-store",
-        }
-      );
+      let url;
 
-      if (!res.ok) throw new Error("Failed to fetch posts");
+      if (FEED_MODE === "global") {
+        // ✅ Old global feed (unchanged)
+        url = `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts?limit=${LIMIT}&offset=${offset}`;
+      } else {
+        // ✅ Microservice feed
+        url = `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts/getconnectionsPost?limit=${LIMIT}&offset=${offset}`;
+      }
+
+      const res = await fetch(url, {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!res.ok) throw new Error("Feed fetch failed");
 
       const data = await res.json();
 
+      // 🔄 Normalize response shape
+      const incomingPosts =
+        FEED_MODE === "global" ? data : normalizeMicroserviceFeed(data.feed);
+
       setPosts((prev) => {
-        if (offset === 0) {
-          return data;
-        }
+        if (offset === 0) return incomingPosts;
 
         const existingIds = new Set(prev.map((p) => p.id));
-        const uniqueNew = data.filter((p) => !existingIds.has(p.id));
+        const uniqueNew = incomingPosts.filter((p) => !existingIds.has(p.id));
 
-        if (uniqueNew.length === 0) {
-          return prev;
-        }
-
+        if (uniqueNew.length === 0) return prev;
         return [...prev, ...uniqueNew];
       });
 
-      if (data.length < LIMIT) {
+      if (incomingPosts.length < LIMIT) {
         setHasMore(false);
       }
     } catch (err) {
-      console.error("Error fetching posts:", err);
+      console.error("Error fetching feed:", err);
       setHasMore(false);
     } finally {
       isFetchingRef.current = false;
       if (offset === 0) setLoadingInitial(false);
       else setLoadingMore(false);
     }
+  };
+
+  // normaliser
+
+  // const normalizeMicroserviceFeed = (feed) => {
+  //   return feed.map((post) => {
+  //     // If this is a repost, merge original_post
+  //     if (post.repostOf && post.repostedPost) {
+  //       return {
+  //         ...post.repostedPost,
+  //         id: post.postId,
+  //         repost_of: post.repostOf,
+  //         original_post: post.repostedPost,
+  //         created_at: post.createdAt,
+  //       };
+  //     }
+
+  //     // Normal post
+  //     return {
+  //       id: post.postId,
+  //       owner: post.owner,
+  //       content: post.content,
+  //       media_url: post.mediaUrl,
+  //       created_at: post.createdAt,
+  //       repost_of: null,
+  //       original_post: null,
+
+  //       // 👇 defaults expected by PostCard
+  //       likes: post.liKes || 0,
+  //       liked_by: post.likedBy || [],
+  //       repost_count: post.repostCount || 0,
+  //       comment_count: 0,
+  //       connection_status: "connected",
+  //       liked_by_me: false,
+  //     };
+  //   });
+  // };
+
+  const normalizeMicroserviceFeed = (feed) => {
+    return feed.map((post) => {
+      const basePost = {
+        id: post.postId,
+        owner: post.owner,
+        content: post.content,
+        media_url: post.mediaUrl ? JSON.parse(post.mediaUrl) : [],
+        created_at: post.createdAt,
+        likes: post.likes || 0,
+        liked_by: post.likedBy || [],
+        repost_count: post.repostCount || 0,
+        comment_count: 0,
+        profile_picture: post.profile_picture,
+        repost_of: post.repostOf || null,
+        original_post: null,
+        full_name: post.full_name,
+        username: post.username,
+        liked_by_me: post.liked_by_me,
+        connection_status: post.connection_status,
+      };
+
+      // If this is a repost, attach original post cleanly
+      if (post.repostOf && post.repostedPost) {
+        basePost.original_post = {
+          id: post.repostedPost.post_id,
+          owner: post.repostedPost.owner,
+          content: post.repostedPost.content,
+          media_url: post.repostedPost.mediaUrl
+            ? JSON.parse(post.repostedPost.mediaUrl)
+            : [],
+          created_at: post.repostedPost.createdAt,
+          likes: post.repostedPost.liKes || 0,
+          liked_by: post.repostedPost.likedBy || [],
+          repost_count: post.repostedPost.repostCount || 0,
+          full_name: post.repostedPost.full_name,
+          username: post.repostedPost.username,
+          profile_picture: post.repostedPost.profile_picture,
+        };
+      }
+
+      return basePost;
+    });
   };
 
   // -------------------------------------------------------
@@ -503,7 +234,7 @@ export default function PostFeed() {
         {
           credentials: "include",
           cache: "no-store",
-        }
+        },
       );
 
       if (!res.ok) return;
@@ -592,7 +323,7 @@ export default function PostFeed() {
         root: null,
         rootMargin: "200px",
         threshold: 0,
-      }
+      },
     );
 
     if (sentinelRef.current) {
@@ -692,8 +423,8 @@ export default function PostFeed() {
           onConnectionStatusChanged={(userId, newStatus) => {
             setPosts((prev) =>
               prev.map((p) =>
-                p.owner === userId ? { ...p, connection_status: newStatus } : p
-              )
+                p.owner === userId ? { ...p, connection_status: newStatus } : p,
+              ),
             );
           }}
         />

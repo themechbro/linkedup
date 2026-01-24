@@ -9,7 +9,7 @@ export const fetchAboutforBrands = async (profileId) => {
       {
         method: "GET",
         credentials: "include",
-      }
+      },
     );
 
     const data = await response.json();
@@ -18,4 +18,16 @@ export const fetchAboutforBrands = async (profileId) => {
     console.log(error);
     return error;
   }
+};
+
+export const EMPTY_POST = {
+  id: "",
+  content: "",
+  media_url: [],
+  likes: 0,
+  liked_by: [],
+  repost_of: null,
+  repost_count: 0,
+  created_at: "",
+  owner: "",
 };

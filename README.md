@@ -1,36 +1,124 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## LinkedUp
 
-## Getting Started
+LinkedUp is a LinkedIn-style social networking application built to explore real-world backend and full-stack concepts such as users, connections, posts, messaging, and conversations.
 
-First, run the development server:
+This repository includes the database schema backup required to run the project locally.
 
-```bash
+## 📦 Tech Stack
+
+**Backend**: Node.js / Express
+
+**Database**: PostgreSQL
+
+**Frontend**: React / Next.js (if applicable)
+
+**Auth**: Sessions / JWT (as implemented)
+
+**Microservice**: Java Spring Boot
+
+## Backend And Spring Boot Repo
+
+- Backend (https://github.com/themechbro/linkedup-backend)
+- Microservice (https://github.com/themechbro/linkedup_microservice)
+
+## 🗄️ Database Setup
+
+The project ships with a PostgreSQL SQL file that defines the **entire database structure** required for the application to run.
+
+### What the SQL file contains
+
+- Tables
+
+- Columns and data types
+
+- Primary keys & foreign keys
+
+- Indexes
+
+- Sequences
+
+- Triggers and functions
+
+> ⚠️ The file may also contain demo/sample data.
+> This is intentional for development convenience.
+
+## 🚀 Getting Started (Local Setup)
+
+### 1️⃣ Create a PostgreSQL database
+
+CREATE DATABASE linkedup;
+
+### 2️⃣ Restore the database schema
+
+- Using psql:
+
+psql -U postgres -d linkedup -f linkedup_schema.sql
+
+- Or using pgAdmin:
+
+Create an empty database named linkedup
+
+Right-click the database → Restore
+
+Select linkedup_schema.sql
+
+- Restore
+
+### 3️⃣ Configure environment variables
+
+Create a .env file in the backend root:
+
+- DB_HOST=localhost
+- DB_PORT=5432
+- DB_NAME=linkedup
+- DB_USER=postgres
+- DB_PASSWORD=your_password
+
+### 4️⃣ Run the backend
+
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📊 Database Structure Overview
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Key tables include:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- users – user profiles and authentication data
 
-## Learn More
+- posts – user posts
 
-To learn more about Next.js, take a look at the following resources:
+- comments – post comments
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- connections – accepted user connections
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- connection_requests – pending connection requests
 
-## Deploy on Vercel
+- messages – chat messages
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- conversations – user conversations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- education – education details
+
+- jobs – job / experience details
+
+- session – session tracking
+
+## 🧠 Notes for Contributors
+
+The database schema is version-controlled via SQL, not migrations.
+
+If you modify the schema, regenerate the SQL backup before committing.
+
+For production setups, consider splitting:
+
+- schema.sql
+
+- seed.sql
+
+## 📜 License
+
+This project is for educational and learning purposes.
+
+## 🙌 Acknowledgements
+
+Inspired by real-world social networking platforms to practice scalable backend and database design.

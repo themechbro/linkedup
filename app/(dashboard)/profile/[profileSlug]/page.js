@@ -7,6 +7,7 @@ import AboutCard from "./components/normal/about-card";
 import EducationCard from "./components/normal/education-card";
 import TabforProfileBrands from "./components/brands/tablist";
 import BrandAboutPage from "./components/brands/brand-about";
+import BrandPostPage from "./components/brands/brand-posts";
 export default function ViewProfilePage({ params }) {
   const path = usePathname();
   const user_id = path.split("/")[2]?.trim();
@@ -20,11 +21,11 @@ export default function ViewProfilePage({ params }) {
       setLoading(true);
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_HOST_IP_MICRO}/api/profile/${user_id}`,
-        { cache: "no-store" }
+        { cache: "no-store" },
       );
       const whoRequested = await fetch(
         `${process.env.NEXT_PUBLIC_HOST_IP}/api/auth/user_details`,
-        { method: "GET", credentials: "include" }
+        { method: "GET", credentials: "include" },
       );
       const profile = await res.json();
       const reqBy = await whoRequested.json();
@@ -63,6 +64,11 @@ export default function ViewProfilePage({ params }) {
           {chosenPage == 0 ? (
             <Box sx={{ mt: 1 }}>
               <BrandAboutPage profile={data} />
+            </Box>
+          ) : null}
+          {chosenPage == 1 ? (
+            <Box sx={{ mt: 1 }}>
+              <BrandPostPage profile={data} />
             </Box>
           ) : null}
         </Box>

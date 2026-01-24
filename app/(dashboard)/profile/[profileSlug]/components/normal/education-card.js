@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import { fetchEdu } from "../../lib/helpers";
 import EducationModal from "../modals/normal/education-modal";
 
-export default function EducationCard({ profile }) {
+export default function EducationCard({ profile, requestedBy }) {
   const [fetchedEdu, setFetchedEdu] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
@@ -30,6 +30,10 @@ export default function EducationCard({ profile }) {
   }, [profile?.userId]);
 
   const educationList = fetchedEdu?.education || [];
+  const isOwnProfile =
+    profile?.userId &&
+    requestedBy?.meta?.user_id &&
+    profile.userId === requestedBy.meta.user_id;
 
   return (
     <>
@@ -51,9 +55,11 @@ export default function EducationCard({ profile }) {
               <BriefcaseBusiness size={30} /> Education
             </Typography>
 
-            <IconButton onClick={() => setOpenModal(true)}>
-              <Plus />
-            </IconButton>
+            {isOwnProfile && (
+              <IconButton onClick={() => setOpenModal(true)}>
+                <Plus />
+              </IconButton>
+            )}
           </Box>
 
           {/* Content */}

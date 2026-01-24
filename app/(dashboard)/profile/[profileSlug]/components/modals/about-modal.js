@@ -30,7 +30,7 @@ export default function AboutMeModal({ open, close, prevAbout, type }) {
           },
           credentials: "include",
           body: JSON.stringify({ about }),
-        }
+        },
       );
 
       const data = await response.json();

@@ -11,7 +11,7 @@ export const deletePost = async (post_id, current_user) => {
           Accept: "application/json",
           "X-User-Id": current_user,
         },
-      }
+      },
     );
 
     const data = await response.json().catch(() => null);
@@ -41,7 +41,7 @@ export async function repostPost(postId, userId) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ userId }),
-      }
+      },
     );
 
     const data = await res.json();
@@ -77,7 +77,7 @@ export async function sendConnectionRequest(receiver_id) {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ receiver_id }),
-      }
+      },
     );
 
     const data = await res.json();
@@ -108,7 +108,7 @@ export async function acceptConnection(sender_id) {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ sender_id }),
-      }
+      },
     );
 
     const data = await res.json();
@@ -133,7 +133,7 @@ export async function rejectConnection(sender_id) {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ sender_id }),
-      }
+      },
     );
 
     const data = await res.json();

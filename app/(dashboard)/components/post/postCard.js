@@ -22,7 +22,7 @@ import {
   Repeat,
   EllipsisVertical,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import CommentComposer from "../comments/comment-composer";
 import CommentList from "../comments/commentList";
@@ -45,20 +45,42 @@ import RepostViewerModal from "./modals/repostviewer";
 import CopyClipboardSnack from "./snackbar/copyClipboardSnack";
 import RepostSnackbar from "../../viewPost/[viewPostSlug]/components/repostSnackbar";
 import DeletePostSnackbar from "./snackbar/deletePostSnack";
+
 export default function PostCard({
   post,
   loadingIni,
   onPostDeleted,
   onConnectionStatusChanged,
 }) {
-  const media =
-    typeof post.media_url === "string"
-      ? JSON.parse(post.media_url)
-      : post.media_url || [];
+  useEffect(() => {
+    setLikes(post.likes || 0);
+    setLiked(post.liked_by?.includes(post.current_user) || false);
+    setComments(post.comments || []);
+    setLocalStatus(post.connection_status || "not_connected");
+  }, [post]);
+
+  // Like Syncer
+  useEffect(() => {
+    setLiked(post.liked_by_me);
+    setLocalStatus(post.connection_status);
+  }, [post.liked_by_me]);
+
+  // const media =
+  //   typeof post.media_url === "string"
+  //     ? JSON.parse(post.media_url)
+  //     : post.media_url || [];
+
+  let media = [];
+  try {
+    media =
+      typeof post.media_url === "string"
+        ? JSON.parse(post.media_url)
+        : post.media_url || [];
+  } catch {
+    media = [];
+  }
   const [likes, setLikes] = useState(post.likes || 0);
-  const [liked, setLiked] = useState(
-    post.liked_by?.includes(post.current_user) || false
-  );
+  const [liked, setLiked] = useState(post.liked_by_me);
   const [openComment, setOpenComment] = useState(false);
   const [comments, setComments] = useState(post.comments || []);
   const [newComment, setNewComment] = useState(null);
@@ -79,7 +101,7 @@ export default function PostCard({
   });
 
   const [localStatus, setLocalStatus] = useState(
-    post.connection_status || "not_connected"
+    post.connection_status || "not_connected",
   );
   const [connLoading, setConnLoading] = useState(false);
   const [mediaViewer, setMediaViewer] = useState({
@@ -91,6 +113,7 @@ export default function PostCard({
     open: false,
     type: "success",
   });
+
   // Functions
   const handleCommentAdded = (comment) => {
     setNewComment(comment);
@@ -102,7 +125,7 @@ export default function PostCard({
         {
           method: "POST",
           credentials: "include",
-        }
+        },
       );
       const data = await res.json();
       if (res.ok) {
@@ -489,7 +512,7 @@ export default function PostCard({
                         minute: "2-digit",
                         day: "2-digit",
                         month: "short",
-                      }
+                      },
                     )}
                   </Typography>
                 </Box>
@@ -516,12 +539,12 @@ export default function PostCard({
                       originalMedia.length === 1
                         ? "1fr"
                         : originalMedia.length === 2
-                        ? "1fr 1fr"
-                        : originalMedia.length === 3
-                        ? "repeat(2, 1fr)"
-                        : originalMedia.length === 4
-                        ? "repeat(2, 1fr)"
-                        : "repeat(3, 1fr)",
+                          ? "1fr 1fr"
+                          : originalMedia.length === 3
+                            ? "repeat(2, 1fr)"
+                            : originalMedia.length === 4
+                              ? "repeat(2, 1fr)"
+                              : "repeat(3, 1fr)",
                   }}
                 >
                   {originalMedia.slice(0, 5).map((m, i) => {
@@ -539,8 +562,8 @@ export default function PostCard({
                             originalMedia.length === 1
                               ? "400px"
                               : originalMedia.length === 2
-                              ? "300px"
-                              : "200px",
+                                ? "300px"
+                                : "200px",
                           overflow: "hidden",
                           bgcolor: "black",
                           cursor: "pointer",
@@ -622,12 +645,12 @@ export default function PostCard({
                   media.length === 1
                     ? "1fr"
                     : media.length === 2
-                    ? "1fr 1fr"
-                    : media.length === 3
-                    ? "repeat(2, 1fr)"
-                    : media.length === 4
-                    ? "repeat(2, 1fr)"
-                    : "repeat(3, 1fr)",
+                      ? "1fr 1fr"
+                      : media.length === 3
+                        ? "repeat(2, 1fr)"
+                        : media.length === 4
+                          ? "repeat(2, 1fr)"
+                          : "repeat(3, 1fr)",
               }}
             >
               {media.slice(0, 5).map((m, i) => {
@@ -645,8 +668,8 @@ export default function PostCard({
                         media.length === 1
                           ? "400px"
                           : media.length === 2
-                          ? "300px"
-                          : "200px",
+                            ? "300px"
+                            : "200px",
                       overflow: "hidden",
                       bgcolor: "black",
                       cursor: "pointer",

@@ -9,6 +9,10 @@ import AboutMeModal from "../modals/about-modal";
 export default function AboutCard({ profile, requestedBy, isLoading }) {
   const [fetchedAbout, setFetchedAbout] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const isOwnProfile =
+    profile?.userId &&
+    requestedBy?.meta?.user_id &&
+    profile.userId === requestedBy.meta.user_id;
   useEffect(() => {
     if (!profile?.userId) return;
 
@@ -40,17 +44,19 @@ export default function AboutCard({ profile, requestedBy, isLoading }) {
             >
               <Info size="30px" /> About me{" "}
             </Typography>
-            <IconButton
-              onClick={() => {
-                setOpenModal(true);
-              }}
-            >
-              <Pencil />
-            </IconButton>
+            {isOwnProfile && (
+              <IconButton
+                onClick={() => {
+                  setOpenModal(true);
+                }}
+              >
+                <Pencil />
+              </IconButton>
+            )}
           </Box>
 
           <Box>
-            <Typography sx={{ mt: 2 }}>
+            <Typography sx={{ mt: 2, whiteSpace: "pre-line" }}>
               {fetchedAbout?.about || "No about information added yet."}
             </Typography>
           </Box>
