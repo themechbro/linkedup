@@ -10,9 +10,9 @@ This repository includes the database schema backup required to run the project 
 
 **Database**: PostgreSQL
 
-**Frontend**: React / Next.js (if applicable)
+**Frontend**: React / Next.js 
 
-**Auth**: Sessions / JWT (as implemented)
+**Auth**: Sessions / JWT 
 
 **Microservice**: Java Spring Boot
 
