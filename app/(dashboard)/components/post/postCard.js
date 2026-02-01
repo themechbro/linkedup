@@ -54,16 +54,10 @@ export default function PostCard({
 }) {
   useEffect(() => {
     setLikes(post.likes || 0);
-    setLiked(post.liked_by?.includes(post.current_user) || false);
+    setLiked(post.liked_by_me || false); // ✅ TRUST BACKEND
     setComments(post.comments || []);
     setLocalStatus(post.connection_status || "not_connected");
   }, [post]);
-
-  // Like Syncer
-  useEffect(() => {
-    setLiked(post.liked_by_me);
-    setLocalStatus(post.connection_status);
-  }, [post.liked_by_me]);
 
   // const media =
   //   typeof post.media_url === "string"

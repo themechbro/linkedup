@@ -10,7 +10,10 @@ import {
   Tooltip,
 } from "@mui/joy";
 import { RefreshCw } from "lucide-react";
-import PostCard from "./postCard";
+import { lazy, Suspense } from "react";
+const PostCard = lazy(() => import("./postCard.js"));
+
+// import PostCard from "./postCard";
 
 export default function PostFeed() {
   const FEED_MODE = "micro";
@@ -101,10 +104,10 @@ export default function PostFeed() {
       let url;
 
       if (FEED_MODE === "global") {
-        // ✅ Old global feed (unchanged)
+        //  Old global feed (unchanged)
         url = `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts?limit=${LIMIT}&offset=${offset}`;
       } else {
-        // ✅ Microservice feed
+        //  Microservice feed
         url = `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts/getconnectionsPost?limit=${LIMIT}&offset=${offset}`;
       }
 
@@ -145,41 +148,6 @@ export default function PostFeed() {
   };
 
   // normaliser
-
-  // const normalizeMicroserviceFeed = (feed) => {
-  //   return feed.map((post) => {
-  //     // If this is a repost, merge original_post
-  //     if (post.repostOf && post.repostedPost) {
-  //       return {
-  //         ...post.repostedPost,
-  //         id: post.postId,
-  //         repost_of: post.repostOf,
-  //         original_post: post.repostedPost,
-  //         created_at: post.createdAt,
-  //       };
-  //     }
-
-  //     // Normal post
-  //     return {
-  //       id: post.postId,
-  //       owner: post.owner,
-  //       content: post.content,
-  //       media_url: post.mediaUrl,
-  //       created_at: post.createdAt,
-  //       repost_of: null,
-  //       original_post: null,
-
-  //       // 👇 defaults expected by PostCard
-  //       likes: post.liKes || 0,
-  //       liked_by: post.likedBy || [],
-  //       repost_count: post.repostCount || 0,
-  //       comment_count: 0,
-  //       connection_status: "connected",
-  //       liked_by_me: false,
-  //     };
-  //   });
-  // };
-
   const normalizeMicroserviceFeed = (feed) => {
     return feed.map((post) => {
       const basePost = {
@@ -230,7 +198,7 @@ export default function PostFeed() {
   const checkForNewPosts = async () => {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts?limit=1&offset=0`,
+        `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts/checkLatestConnectionPost`,
         {
           credentials: "include",
           cache: "no-store",
@@ -462,15 +430,4 @@ export default function PostFeed() {
       `}</style>
     </Box>
   );
-}
-
-{
-  /* <PostCard
-          key={post.id}
-          post={post}
-          loadingIni={loadingInitial}
-          onPostDeleted={(id) => {
-            setPosts((prev) => prev.filter((p) => p.id !== id));
-          }}
-        /> */
 }
