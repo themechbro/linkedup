@@ -28,13 +28,13 @@ From 2 Feb 2026 onwards, Redis is used in LinkedUp as a high-speed, in-memory la
 
 **Why Redis here?**
 
--Feed generation is read-heavy and expensive to recompute (connections → posts → enrichment → pagination)
+- Feed generation is read-heavy and expensive to recompute (connections → posts → enrichment → pagination)
 
--Profile and connection data are reused across many APIs
+- Profile and connection data are reused across many APIs
 
--Realtime UX (e.g., typing indicators) should not touch the DB
+- Realtime UX (e.g., typing indicators) should not touch the DB
 
--Like counts are frequently read, rarely changed
+- Like counts are frequently read, rarely changed
 
 **What we cache**
 | Use Case         | Key Pattern                          | TTL        | Purpose                                                            |
@@ -48,24 +48,24 @@ From 2 Feb 2026 onwards, Redis is used in LinkedUp as a high-speed, in-memory la
 **Performance Benchmarks**
 
 ***Before Redis (No Cache)***
--First Request: ~500ms
--Subsequent Requests: ~500ms
--DB Queries per Request: 2-3
--Microservice Calls: 1 per request
+- First Request: ~500ms
+- Subsequent Requests: ~500ms
+- DB Queries per Request: 2-3
+- Microservice Calls: 1 per request
 
 ***After Redis (With Cache)***
--First Request (Cache Miss): ~500ms
--Cached Requests (Cache Hit): ~20ms ⚡
--DB Queries per Request: 0 (when cached)
--Microservice Calls: 0 (when cached)
--Performance Improvement: ~25x faster
+- First Request (Cache Miss): ~500ms
+- Cached Requests (Cache Hit): ~20ms ⚡
+- DB Queries per Request: 0 (when cached)
+- Microservice Calls: 0 (when cached)
+- Performance Improvement: ~25x faster
 
 ***Cache Hit Rate Optimization***
 To maximize cache hit rate:
--Use consistent pagination: Encourage users to use standard limit values (10, 20, 50)
--Monitor cache stats: Track hit/miss ratios
--Adjust TTL: Balance freshness vs performance
--Pre-warm cache: Cache feeds for active users during off-peak hours
+- Use consistent pagination: Encourage users to use standard limit values (10, 20, 50)
+- Monitor cache stats: Track hit/miss ratios
+- Adjust TTL: Balance freshness vs performance
+- Pre-warm cache: Cache feeds for active users during off-peak hours
 
 ## 🗄️ Database Setup
 
