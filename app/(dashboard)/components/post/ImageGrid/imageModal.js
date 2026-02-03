@@ -1,5 +1,6 @@
 import { Modal, ModalClose, ModalDialog, IconButton, Box } from "@mui/joy";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import VideoPlayer from "../player/videoPlayer";
 
 export default function ImagegridModal({
   mediaViewer,
@@ -98,17 +99,22 @@ export default function ImagegridModal({
           }}
         >
           {media[mediaViewer.currentIndex]?.type === "videos" ? (
-            <video
+            // <video
+            //   src={`${process.env.NEXT_PUBLIC_HOST_IP}${
+            //     media[mediaViewer.currentIndex].url
+            //   }`}
+            //   controls
+            //   autoPlay
+            //   style={{
+            //     maxWidth: "100%",
+            //     maxHeight: "100%",
+            //     objectFit: "contain",
+            //   }}
+            // />
+            <VideoPlayer
               src={`${process.env.NEXT_PUBLIC_HOST_IP}${
                 media[mediaViewer.currentIndex].url
               }`}
-              controls
-              autoPlay
-              style={{
-                maxWidth: "100%",
-                maxHeight: "100%",
-                objectFit: "contain",
-              }}
             />
           ) : (
             <img

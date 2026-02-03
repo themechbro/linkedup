@@ -60,7 +60,7 @@ export default function ViewPostPageSlug({ post }) {
           width: "100%",
         }}
       >
-        <ViewPostCard post={data.data} requested_by={data.requested_by} />
+        <ViewPostCard post={data?.data} requested_by={data?.requested_by} />
       </Box>
       <Box
         sx={{

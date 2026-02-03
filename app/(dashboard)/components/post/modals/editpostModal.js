@@ -201,7 +201,13 @@ import {
 import { useState, useEffect } from "react";
 import { Image, X } from "lucide-react";
 
-export default function EditPostModal({ post, openEdit, closeEdit, onSave }) {
+export default function EditPostModal({
+  post,
+  openEdit,
+  closeEdit,
+  onSave,
+  requestedBy,
+}) {
   const [content, setContent] = useState("");
   const [existingMedia, setExistingMedia] = useState([]);
   const [newMediaFiles, setNewMediaFiles] = useState([]);
@@ -288,7 +294,7 @@ export default function EditPostModal({ post, openEdit, closeEdit, onSave }) {
           method: "PUT",
           body: formData,
           credentials: "include", // Important for session cookies
-        }
+        },
       );
 
       const data = await response.json();

@@ -493,7 +493,7 @@ const PostCard = lazy(() => import("./postCard.js"));
 export default function PostFeed() {
   const FEED_MODE = "micro";
   const LIMIT = 10;
-  const REFRESH_INTERVAL = 30000; // 30 seconds
+  const REFRESH_INTERVAL = 360000; // 6minutes
 
   const [posts, setPosts] = useState([]);
   const [loadingInitial, setLoadingInitial] = useState(true);
@@ -501,12 +501,38 @@ export default function PostFeed() {
   const [hasMore, setHasMore] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [newPostsAvailable, setNewPostsAvailable] = useState(false);
-
+  const [reqUser, setReqUser] = useState("");
   const isFetchingRef = useRef(false);
   const observerRef = useRef(null);
   const sentinelRef = useRef(null);
   const refreshIntervalRef = useRef(null);
 
+  const markPostAsSeen = async (postId) => {
+    try {
+      console.log("📌 Marking post as seen:", postId);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts/markPostAsSeen`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ postId }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to mark post as seen");
+      }
+
+      const data = await response.json();
+      console.log("✅ Post marked as seen successfully:", data);
+      return true;
+    } catch (err) {
+      console.error("❌ Error marking post as seen:", err);
+      return false;
+    }
+  };
   // -------------------------------------------------------
   // Fetch posts
   // -------------------------------------------------------
@@ -535,6 +561,7 @@ export default function PostFeed() {
 
       const data = await res.json();
 
+      setReqUser(data.currentUser);
       const incomingPosts =
         FEED_MODE === "global" ? data : normalizeMicroserviceFeed(data.feed);
 
@@ -614,25 +641,26 @@ export default function PostFeed() {
   };
 
   // ✅ NEW: Mark post as seen on backend
-  const markPostAsSeen = async (postId) => {
-    try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts/markPostAsSeen`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ postId }),
-        },
-      );
-    } catch (err) {
-      console.error("Error marking post as seen:", err);
-    }
-  };
+  // const markPostAsSeen = async (postId) => {
+  //   try {
+  //     await fetch(
+  //       `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts/markPostAsSeen`,
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         credentials: "include",
+  //         body: JSON.stringify({ postId }),
+  //       },
+  //     );
+  //   } catch (err) {
+  //     console.error("Error marking post as seen:", err);
+  //   }
+  // };
 
   // -------------------------------------------------------
   // ✅ UPDATED: Check uses backend hasNewPosts flag
   // -------------------------------------------------------
+
   const checkForNewPosts = async () => {
     try {
       const res = await fetch(
@@ -759,7 +787,6 @@ export default function PostFeed() {
         No posts yet. Be the first to post something!
       </Typography>
     );
-
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       {/* New Posts Banner */}
@@ -802,7 +829,6 @@ export default function PostFeed() {
           </Box>
         </Box>
       )}
-
       {/* Manual Refresh Button */}
       <Box sx={{ display: "flex", justifyContent: "flex-end", mb: -2 }}>
         <Tooltip title="Refresh feed">
@@ -835,6 +861,7 @@ export default function PostFeed() {
               ),
             );
           }}
+          requestedBy={reqUser}
         />
       ))}
 

@@ -45,12 +45,14 @@ import RepostViewerModal from "./modals/repostviewer";
 import CopyClipboardSnack from "./snackbar/copyClipboardSnack";
 import RepostSnackbar from "../../viewPost/[viewPostSlug]/components/repostSnackbar";
 import DeletePostSnackbar from "./snackbar/deletePostSnack";
+import VideoPlayer from "./player/videoPlayer";
 
 export default function PostCard({
   post,
   loadingIni,
   onPostDeleted,
   onConnectionStatusChanged,
+  requestedBy,
 }) {
   useEffect(() => {
     setLikes(post.likes || 0);
@@ -205,7 +207,7 @@ export default function PostCard({
 
   const handleMenuClick = async (action) => {
     if (action === "Delete Post") {
-      const result = await deletePost(post.id, post.current_user);
+      const result = await deletePost(post.id, requestedBy);
 
       if (result.success) {
         onPostDeleted(post.id);
@@ -438,7 +440,7 @@ export default function PostCard({
                     .filter((item) => {
                       // Only show Delete Post if current user owns the post
                       if (item.name === "Delete Post") {
-                        return post.current_user === post.owner;
+                        return requestedBy === post.owner;
                       }
                       if (item.name == "Not Interested") {
                         return post.current_user !== post.owner;
@@ -447,7 +449,7 @@ export default function PostCard({
                         return post.current_user !== post.owner;
                       }
                       if (item.name == "Edit Post") {
-                        return post.current_user === post.owner;
+                        return requestedBy === post.owner;
                       }
                       return true; // show all other items always
                     })
@@ -707,16 +709,19 @@ export default function PostCard({
                         </Box>
                       </>
                     ) : isVideo ? (
-                      <video
+                      <VideoPlayer
                         src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          pointerEvents: "none",
-                        }}
                       />
                     ) : (
+                      // <video
+                      //   src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                      //   style={{
+                      //     width: "100%",
+                      //     height: "100%",
+                      //     objectFit: "cover",
+                      //     pointerEvents: "none",
+                      //   }}
+                      // />
                       <Image
                         src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
                         alt="post media"
@@ -861,6 +866,7 @@ export default function PostCard({
         openEdit={openEdit}
         closeEdit={() => setOpenEdit(false)}
         post={post}
+        requestedBy={requestedBy}
       />
       {/* Image grid viewer */}
       <ImagegridModal
