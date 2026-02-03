@@ -18,7 +18,7 @@ This repository includes the database schema backup required to run the project 
 
 **Caching***: Redis
 
-## Backend And Spring Boot Repo
+## Backend And Spring Boot Repo  ###⚠️(These Repo's must be also downloaded for the Linkedup to run)
 
 - Backend (https://github.com/themechbro/linkedup-backend)
 - Microservice (https://github.com/themechbro/linkedup_microservice)
