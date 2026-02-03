@@ -149,6 +149,12 @@ Key tables include:
 
 - session – session tracking
 
+## 📂 Uploads 
+As of know, Medias's (Images and Videos) are stored locally. That means, after downloading the linkedup-backend repo (Express server), you have to create a folder named **Uploads** which contains 2 more folders inside it **images** and **videos**. The structure is given in the image below 👇
+
+<img width="298" height="552" alt="image" src="https://github.com/user-attachments/assets/ec7aa878-569a-4b40-b21e-787dc9918db4" />
+
+
 ## 🧠 Notes for Contributors
 
 The database schema is version-controlled via SQL, not migrations.
