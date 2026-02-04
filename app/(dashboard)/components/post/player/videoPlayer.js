@@ -1,7 +1,8 @@
 "use client";
 import { useRef, useState, useEffect } from "react";
 import { Box, IconButton, Slider, Typography } from "@mui/joy";
-import { Play, Pause, Volume2, VolumeX, Maximize } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Maximize, Repeat } from "lucide-react";
+import Hls from "hls.js";
 
 export default function VideoPlayer({ src }) {
   const videoRef = useRef(null);
@@ -13,14 +14,60 @@ export default function VideoPlayer({ src }) {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(true);
+  const [ended, setEnded] = useState(false);
+
+  useEffect(() => {
+    let hls;
+
+    if (Hls.isSupported()) {
+      hls = new Hls({
+        maxBufferLength: 30,
+      });
+
+      hls.loadSource(src);
+      hls.attachMedia(videoRef.current);
+
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        setDuration(videoRef.current.duration);
+      });
+    } else {
+      videoRef.current.src = src;
+    }
+
+    const video = videoRef.current;
+
+    const updateProgress = () => {
+      if (!video.duration) return;
+      setProgress((video.currentTime / video.duration) * 100);
+    };
+
+    video.addEventListener("timeupdate", updateProgress);
+    const onEnded = () => {
+      setEnded(true);
+      setPlaying(false);
+    };
+    video.addEventListener("ended", onEnded);
+    return () => {
+      if (hls) hls.destroy();
+      video.removeEventListener("timeupdate", updateProgress);
+      video.removeEventListener("ended", onEnded);
+    };
+  }, [src]);
 
   // Play / Pause
   const togglePlay = () => {
-    if (!videoRef.current) return;
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (ended) {
+      video.currentTime = 0;
+      setEnded(false);
+    }
+
     if (playing) {
-      videoRef.current.pause();
+      video.pause();
     } else {
-      videoRef.current.play();
+      video.play();
     }
     setPlaying(!playing);
   };
@@ -37,21 +84,25 @@ export default function VideoPlayer({ src }) {
     setMuted(!muted);
   };
 
-  // Progress
-  const handleTimeUpdate = () => {
-    const current = videoRef.current.currentTime;
-    setProgress((current / duration) * 100);
-  };
-
   const handleSeek = (_, val) => {
-    const time = (val / 100) * duration;
-    videoRef.current.currentTime = time;
+    const video = videoRef.current;
+    if (!video || !video.duration) return;
+
+    const seekTime = (val / 100) * video.duration;
+
+    video.currentTime = seekTime;
     setProgress(val);
+
+    if (ended) {
+      setEnded(false);
+      video.play();
+      setPlaying(true);
+    }
   };
 
-  const handleLoaded = () => {
-    setDuration(videoRef.current.duration);
-  };
+  // const handleLoaded = () => {
+  //   setDuration(videoRef.current.duration);
+  // };
 
   // Fullscreen
   const goFullscreen = () => {
@@ -83,21 +134,56 @@ export default function VideoPlayer({ src }) {
       sx={{
         position: "relative",
         width: "100%",
+        aspectRatio: "16/9",
         borderRadius: "12px",
         overflow: "hidden",
         bgcolor: "black",
         cursor: "pointer",
       }}
       onMouseMove={() => setShowControls(true)}
+      onClick={(e) => e.stopPropagation()}
     >
       <video
         ref={videoRef}
-        src={src}
+        // src={src}
         onClick={togglePlay}
-        onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={handleLoaded}
-        style={{ width: "100%", height: "100%", display: "block" }}
+        // onLoadedMetadata={handleLoaded}
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "block",
+          objectFit: "cover",
+        }}
       />
+
+      {/* Replay video overlay after ended */}
+      {ended && (
+        <Box
+          onClick={togglePlay}
+          sx={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 5,
+            cursor: "pointer",
+          }}
+        >
+          <IconButton
+            size="lg"
+            sx={{
+              bgcolor: "rgba(255,255,255,0.15)",
+              backdropFilter: "blur(6px)",
+              color: "white",
+              "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
+            }}
+          >
+            <Repeat size={36} />
+          </IconButton>
+        </Box>
+      )}
 
       {/* Controls Overlay */}
       {showControls && (
@@ -149,10 +235,12 @@ export default function VideoPlayer({ src }) {
                 />
               </Box>
 
-              <Typography level="body-xs" color="#FFF">
-                {formatTime(videoRef.current?.currentTime || 0)} /{" "}
-                {formatTime(duration)}
-              </Typography>
+              <Box sx={{ m: 2 }}>
+                <Typography level="body-xs" color="#FFF">
+                  {formatTime(videoRef.current?.currentTime || 0)} /{" "}
+                  {formatTime(duration)}
+                </Typography>
+              </Box>
             </Box>
 
             <IconButton onClick={goFullscreen} size="sm" color="#FFF">

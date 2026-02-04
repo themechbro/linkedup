@@ -493,7 +493,7 @@ const PostCard = lazy(() => import("./postCard.js"));
 export default function PostFeed() {
   const FEED_MODE = "micro";
   const LIMIT = 10;
-  const REFRESH_INTERVAL = 360000; // 6minutes
+  const REFRESH_INTERVAL = 3660000; // 6minutes
 
   const [posts, setPosts] = useState([]);
   const [loadingInitial, setLoadingInitial] = useState(true);

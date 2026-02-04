@@ -679,7 +679,10 @@ export default function PostCard({
                           height: "300px",
                         }),
                     }}
-                    onClick={() => openMediaViewer(i)}
+                    // onClick={() => openMediaViewer(i)}
+                    onClick={() => {
+                      if (!isVideo) openMediaViewer(i);
+                    }}
                   >
                     {isLastItem ? (
                       <>
@@ -713,15 +716,6 @@ export default function PostCard({
                         src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
                       />
                     ) : (
-                      // <video
-                      //   src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
-                      //   style={{
-                      //     width: "100%",
-                      //     height: "100%",
-                      //     objectFit: "cover",
-                      //     pointerEvents: "none",
-                      //   }}
-                      // />
                       <Image
                         src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
                         alt="post media"
