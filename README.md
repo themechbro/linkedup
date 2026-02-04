@@ -18,7 +18,7 @@ This repository includes the database schema backup required to run the project 
 
 **Caching***: Redis
 
-## Backend And Spring Boot Repo
+## Backend And Spring Boot Repo  ###⚠️(These Repo's must be also downloaded for the Linkedup to run)
 
 - Backend (https://github.com/themechbro/linkedup-backend)
 - Microservice (https://github.com/themechbro/linkedup_microservice)
@@ -148,6 +148,12 @@ Key tables include:
 - jobs – job / experience details
 
 - session – session tracking
+
+## 📂 Uploads 
+As of know, Medias's (Images and Videos) are stored locally. That means, after downloading the linkedup-backend repo (Express server), you have to create a folder named **Uploads** which contains 2 more folders inside it **images** and **videos**. The structure is given in the image below 👇
+
+<img width="298" height="552" alt="image" src="https://github.com/user-attachments/assets/ec7aa878-569a-4b40-b21e-787dc9918db4" />
+
 
 ## 🧠 Notes for Contributors
 
