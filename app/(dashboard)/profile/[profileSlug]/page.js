@@ -20,8 +20,8 @@ export default function ViewProfilePage({ params }) {
     try {
       setLoading(true);
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_IP_MICRO}/api/profile/${user_id}`,
-        { cache: "no-store" },
+        `${process.env.NEXT_PUBLIC_HOST_IP}/api/profile/fetch/fetch-profile?user_id=${user_id}`,
+        { method: "GET", cache: "no-store", credentials: "include" },
       );
       const whoRequested = await fetch(
         `${process.env.NEXT_PUBLIC_HOST_IP}/api/auth/user_details`,
@@ -29,7 +29,9 @@ export default function ViewProfilePage({ params }) {
       );
       const profile = await res.json();
       const reqBy = await whoRequested.json();
-      setData(profile);
+      if (profile) {
+        setData(profile.profile);
+      }
       setByWho(reqBy);
     } catch (err) {
       console.log(err);

@@ -1,6 +1,9 @@
 "use client";
 import { Box, Divider } from "@mui/joy";
-import ProfileHomeCard from "../components/profile/profilecard";
+
+import { lazy, Suspense } from "react";
+const ProfileHomeCard = lazy(() => import("../components/profile/profilecard"));
+// import ProfileHomeCard from "../components/profile/profilecard";
 import PostFeed from "../components/post/postFeed";
 import PostComposer from "../components/composers/postComposer";
 import LinkedupNewsCard from "../components/linkeup_news_card";
@@ -15,7 +18,7 @@ export default function HomePage() {
         {
           method: "GET",
           credentials: "include",
-        }
+        },
       );
       const data = await response.json();
       setFetchedData(data);
@@ -57,7 +60,9 @@ export default function HomePage() {
           alignSelf: "start",
         }}
       >
-        <ProfileHomeCard />
+        <Suspense fallback="Loading....">
+          <ProfileHomeCard />
+        </Suspense>
       </Box>
 
       {/* Main Feed */}

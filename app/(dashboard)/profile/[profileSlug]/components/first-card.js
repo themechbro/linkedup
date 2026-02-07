@@ -20,7 +20,7 @@ import { Check, X } from "lucide-react";
 import AddProfileSectionModal from "./add-profile-section/add-profile-section-modal";
 import TabforProfileBrands from "./brands/tablist";
 
-export default function ProfileFirst({ profile, requestedBy, isLoading }) {
+export default function ProfileFirst({ profile = {}, requestedBy, isLoading }) {
   const router = useRouter();
   const [isOwner, setIsOwner] = useState(false);
   const [picModal, setPicModal] = useState({
@@ -56,7 +56,7 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/check_connection?profileId=${profile.userId}`,
-          { credentials: "include" }
+          { credentials: "include" },
         );
 
         const data = await res.json();
@@ -131,7 +131,7 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({ receiver_id: profile.userId }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -163,7 +163,7 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({ sender_id: profile.userId }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -193,7 +193,7 @@ export default function ProfileFirst({ profile, requestedBy, isLoading }) {
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({ sender_id: profile.userId }),
-        }
+        },
       );
 
       const data = await res.json();
