@@ -675,7 +675,6 @@ export default function PostFeed() {
 
       const data = await res.json();
 
-      // ✅ Backend now returns hasNewPosts flag
       if (data.hasNewPosts) {
         setNewPostsAvailable(true);
       }
