@@ -10,20 +10,21 @@ This repository includes the database schema backup required to run the project 
 
 **Database**: PostgreSQL
 
-**Frontend**: React / Next.js 
+**Frontend**: React / Next.js
 
-**Auth**: Sessions / JWT 
+**Auth**: Sessions / JWT
 
 **Microservice**: Java Spring Boot
 
-**Caching***: Redis
+**Caching\***: Redis
 
-## Backend And Spring Boot Repo  ###⚠️(These Repo's must be also downloaded for the Linkedup to run)
+## Backend And Spring Boot Repo ###⚠️(These Repo's must be also downloaded for the Linkedup to run)
 
 - Backend (https://github.com/themechbro/linkedup-backend)
 - Microservice (https://github.com/themechbro/linkedup_microservice)
 
-##  Redis (Caching, Realtime Signals, Feed Acceleration) ##
+## Redis (Caching, Realtime Signals, Feed Acceleration)
+
 From 2 Feb 2026 onwards, Redis is used in LinkedUp as a high-speed, in-memory layer to reduce PostgreSQL load, accelerate feed reads, and power short-lived realtime signals without writing transient state to the database.
 
 **Why Redis here?**
@@ -37,35 +38,79 @@ From 2 Feb 2026 onwards, Redis is used in LinkedUp as a high-speed, in-memory la
 - Like counts are frequently read, rarely changed
 
 **What we cache**
-| Use Case         | Key Pattern                          | TTL        | Purpose                                                            |
-| ---------------- | ------------------------------------ | ---------- | ------------------------------------------------------------------ |
-| Feed cache       | `feed:connections:{user_id}`         | 60–120 sec | Cache fully enriched paginated feed (fan-out on read optimization) |
-| User profile     | `user:profile:{user_id}`             | 5–10 min   | Avoid repeated profile lookups during feed/comment rendering       |
-| User connections | `user:connections:{user_id}`         | 5 min      | Reused for feed building and visibility checks                     |
-| Typing indicator | `typing:{conversation_id}:{user_id}` | 5 sec      | Realtime “user is typing” without DB writes                        |
-| Post like count  | `post:likes:{post_id}`               | 2–5 min    | Reduce repeated count reads from likes service/DB                  |
+| Use Case | Key Pattern | TTL | Purpose |
+| ---------------- | -------------------------------------------------|----------- | ------------------------------------------------------------------ |
+| Feed cache | `feed:connections:{user_id}:{limit}:{offset}` | 15 mins | Cache fully enriched paginated feed (fan-out on read optimization) |
+| User profile | `profile:{user_id}` | 5–10 min | Avoid repeated profile lookups during feed/comment rendering |
+| Profile About | `profile:about:{user_id}` | 15 min | Reused for profile viewing |
+| Profile Education |`profile:edu:{user_id}` | 15 min |Reused for profile viewing |
+| Profile Work | `profile:work:{user_id}` | 15 min | Reused for profile viewing |
+| Jobs | `jobs:{user_id}:{limit}:{offset}` | 15 min | Reused for profile viewing |
 
 **Performance Benchmarks**
 
-***Before Redis (No Cache)***
+**_Before Redis (No Cache)_**
+
 - First Request: ~500ms
 - Subsequent Requests: ~500ms
 - DB Queries per Request: 2-3
 - Microservice Calls: 1 per request
 
-***After Redis (With Cache)***
+**_After Redis (With Cache)_**
+
 - First Request (Cache Miss): ~500ms
 - Cached Requests (Cache Hit): ~20ms ⚡
 - DB Queries per Request: 0 (when cached)
 - Microservice Calls: 0 (when cached)
 - Performance Improvement: ~25x faster
 
-***Cache Hit Rate Optimization***
+**_Cache Hit Rate Optimization_**
 To maximize cache hit rate:
+
 - Use consistent pagination: Encourage users to use standard limit values (10, 20, 50)
 - Monitor cache stats: Track hit/miss ratios
 - Adjust TTL: Balance freshness vs performance
 - Pre-warm cache: Cache feeds for active users during off-peak hours
+
+## Video Streaming using FFmpeg
+
+This project uses **FFmpeg** to enable efficient video streaming by converting uploaded video files into smaller chunks and generating an **HLS (HTTP Live Streaming)** playlist (`.m3u8`).
+
+Instead of serving a full video file at once, the video is streamed **segment by segment**, similar to how platforms like YouTube, Hotstar, and Netflix deliver video content.
+
+---
+
+### Why FFmpeg + HLS?
+
+- **Adaptive streaming**: Videos are split into small `.ts` segments, allowing smooth playback even on low or unstable networks.
+- **Faster start time**: Playback can begin before the entire video is downloaded.
+- **Seek support**: Users can jump forward/backward without loading the full file.
+- **Scalability**: Ideal for large video libraries and high traffic.
+
+---
+
+### How It Works
+
+1. A video is uploaded to the server.
+2. FFmpeg converts the video into:
+   - Multiple `.ts` chunk files
+   - A single `.m3u8` playlist file
+3. The client video player loads the `.m3u8` file.
+4. Video chunks are fetched and played sequentially.
+
+---
+
+### FFmpeg Command Used
+
+```bash
+ffmpeg -i input.mp4 \
+  -profile:v baseline \
+  -level 3.0 \
+  -start_number 0 \
+  -hls_time 5 \
+  -hls_list_size 0 \
+  -f hls index.m3u8
+
 
 ## 🗄️ Database Setup
 
@@ -149,11 +194,11 @@ Key tables include:
 
 - session – session tracking
 
-## 📂 Uploads 
+## 📂 Uploads
+
 As of know, Medias's (Images and Videos) are stored locally. That means, after downloading the linkedup-backend repo (Express server), you have to create a folder named **Uploads** which contains 2 more folders inside it **images** and **videos**. The structure is given in the image below 👇
 
 <img width="298" height="552" alt="image" src="https://github.com/user-attachments/assets/ec7aa878-569a-4b40-b21e-787dc9918db4" />
-
 
 ## 🧠 Notes for Contributors
 
@@ -167,7 +212,7 @@ For production setups, consider splitting:
 
 - seed.sql
 
-***All the specification is mentioned here in linkedup repo, that does not mean this is the final repo. Backend and Microservice has there dedicated repo which I have mentioned above, clone that too for the working of this project. Merging of this whole project will be done after its completeion only.***
+**_All the specification is mentioned here in linkedup repo, that does not mean this is the final repo. Backend and Microservice has there dedicated repo which I have mentioned above, clone that too for the working of this project. Merging of this whole project will be done after its completeion only._**
 
 ## 📜 License
 
@@ -176,3 +221,4 @@ This project is for educational and learning purposes.
 ## 🙌 Acknowledgements
 
 Inspired by real-world social networking platforms to practice scalable backend and database design.
+```
