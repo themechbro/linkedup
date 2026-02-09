@@ -110,7 +110,7 @@ ffmpeg -i input.mp4 \
   -hls_time 5 \
   -hls_list_size 0 \
   -f hls index.m3u8
-
+```
 
 ## 🗄️ Database Setup
 
@@ -221,4 +221,7 @@ This project is for educational and learning purposes.
 ## 🙌 Acknowledgements
 
 Inspired by real-world social networking platforms to practice scalable backend and database design.
+
+```
+
 ```
