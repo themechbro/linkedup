@@ -8,6 +8,7 @@ import EducationCard from "./components/normal/education-card";
 import TabforProfileBrands from "./components/brands/tablist";
 import BrandAboutPage from "./components/brands/brand-about";
 import BrandPostPage from "./components/brands/brand-posts";
+import WorkCard from "./components/normal/work-card";
 export default function ViewProfilePage({ params }) {
   const path = usePathname();
   const user_id = path.split("/")[2]?.trim();
@@ -85,6 +86,10 @@ export default function ViewProfilePage({ params }) {
               requestedBy={byWho}
               isLoading={loading}
             />
+          </Box>
+
+          <Box sx={{ mb: 3 }}>
+            <WorkCard profile={data} requestedBy={byWho} isLoading={loading} />
           </Box>
         </Box>
       )}

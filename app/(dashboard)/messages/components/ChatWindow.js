@@ -32,7 +32,11 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
   const typingTimeoutRef = useRef(null);
   const [currUser, setCurrUser] = useState({});
   const socket = getSocket();
-
+  const [loadingOlder, setLoadingOlder] = useState(false); // ✅ NEW
+  const [hasMore, setHasMore] = useState(true); // ✅ NEW
+  const [offset, setOffset] = useState(0); // ✅ NEW
+  const previousScrollHeight = useRef(0);
+  const messagesTopRef = useRef(null);
   //Socket
   useEffect(() => {
     socket.connect();
@@ -78,10 +82,6 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
     };
   }, [userId, socket.connected]);
 
-  // useEffect(() => {
-  //   console.log("🟢 isTyping state changed to:", isTyping);
-  // }, [isTyping]);
-
   // Safety
   useEffect(() => {
     return () => {
@@ -121,7 +121,7 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_HOST_IP}/api/auth/user_details`,
-          { method: "GET", credentials: "include" }
+          { method: "GET", credentials: "include" },
         );
         const data = await response.json();
         setCurrUser(data);
@@ -147,29 +147,133 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
     }, 800);
   };
 
-  const fetchMessages = async () => {
+  // const fetchMessages = async () => {
+  //   try {
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_HOST_IP}/api/messages/get-coversation-specific/${userId}?limit=20`,
+  //       { credentials: "include" },
+  //     );
+  //     const data = await res.json();
+
+  //     if (data.success) {
+  //       setMessages(data.messages);
+  //     }
+  //   } catch (err) {
+  //     console.error("Error fetching messages:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // ✅ MODIFIED: Fetch messages with deduplication
+  const fetchMessages = async (loadMore = false) => {
+    if (loadMore && (!hasMore || loadingOlder)) return;
+
     try {
+      if (loadMore) {
+        setLoadingOlder(true);
+      }
+
+      const currentOffset = loadMore ? offset : 0;
+
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_IP}/api/messages/get-coversation-specific/${userId}?limit=20`,
-        { credentials: "include" }
+        `${process.env.NEXT_PUBLIC_HOST_IP}/api/messages/get-coversation-specific/${userId}?limit=20&offset=${currentOffset}`,
+        { credentials: "include" },
       );
       const data = await res.json();
 
       if (data.success) {
-        setMessages(data.messages);
+        if (loadMore) {
+          // ✅ FIX: Deduplicate messages before prepending
+          setMessages((prev) => {
+            const existingIds = new Set(prev.map((m) => m.message_id));
+            const newMessages = data.messages.filter(
+              (msg) => !existingIds.has(msg.message_id),
+            );
+            return [...newMessages, ...prev];
+          });
+          setOffset((prev) => prev + 20);
+          setHasMore(data.messages.length === 20);
+        } else {
+          // ✅ FIX: Deduplicate on initial load too
+          setMessages((prev) => {
+            // Create a map to avoid duplicates
+            const messagesMap = new Map();
+
+            // Add new messages first
+            data.messages.forEach((msg) => {
+              messagesMap.set(msg.message_id, msg);
+            });
+
+            // Keep existing messages that aren't in new data (for real-time updates)
+            prev.forEach((msg) => {
+              if (!messagesMap.has(msg.message_id)) {
+                messagesMap.set(msg.message_id, msg);
+              }
+            });
+
+            // Convert back to array and sort by timestamp
+            return Array.from(messagesMap.values()).sort(
+              (a, b) => new Date(a.created_at) - new Date(b.created_at),
+            );
+          });
+          setOffset(20);
+          setHasMore(data.messages.length === 20);
+        }
       }
     } catch (err) {
       console.error("Error fetching messages:", err);
     } finally {
       setLoading(false);
+      setLoadingOlder(false);
     }
   };
+
+  // ✅ MODIFIED: Update initial fetch
+  useEffect(() => {
+    if (userId) {
+      fetchMessages(false); // Initial load
+      fetchUserInfo();
+
+      // Poll for new messages only (not old ones)
+      const interval = setInterval(() => fetchMessages(false), 3000);
+      return () => clearInterval(interval);
+    }
+  }, [userId]);
+
+  // ✅ NEW: Maintain scroll position after loading older messages
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container || !loadingOlder) return;
+
+    // After older messages load, maintain scroll position
+    const newScrollHeight = container.scrollHeight;
+    const scrollDiff = newScrollHeight - previousScrollHeight.current;
+    container.scrollTop = scrollDiff;
+  }, [messages, loadingOlder]);
+
+  useEffect(() => {
+    if (userId) {
+      // Reset state for new conversation
+      setMessages([]);
+      setOffset(0);
+      setHasMore(true);
+      isInitialLoad.current = true;
+
+      fetchMessages(false); // Initial load
+      fetchUserInfo();
+
+      // Poll for new messages only (not old ones)
+      const interval = setInterval(() => fetchMessages(false), 3000);
+      return () => clearInterval(interval);
+    }
+  }, [userId]); // This triggers when userId changes
 
   const fetchUserInfo = async () => {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_HOST_IP_MICRO}/api/profile/${userId}`,
-        { credentials: "include" }
+        { credentials: "include" },
       );
       const data = await res.json();
       console.log("Fetched user info:", data); // 👈 ADD THIS FOR DEBUGGING
@@ -244,7 +348,7 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
             receiver_id: userId,
             content: messageText,
           }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -288,11 +392,29 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
   const messageGroups = groupMessagesByDate(messages);
 
   // Scroll
+  // const handleScroll = () => {
+  //   const container = messagesContainerRef.current;
+  //   if (!container) return;
+
+  //   // Check if user is NOT at the bottom
+  //   const isAtBottom =
+  //     container.scrollHeight - container.scrollTop - container.clientHeight <
+  //     100;
+
+  //   setShowScrollButton(!isAtBottom);
+  // };
+  // ✅ NEW: Detect scroll to top and load older messages
   const handleScroll = () => {
     const container = messagesContainerRef.current;
     if (!container) return;
 
-    // Check if user is NOT at the bottom
+    // Save current scroll height before loading more
+    if (container.scrollTop < 100 && hasMore && !loadingOlder) {
+      previousScrollHeight.current = container.scrollHeight;
+      fetchMessages(true); // Load older messages
+    }
+
+    // Check if user is at the bottom (for scroll button)
     const isAtBottom =
       container.scrollHeight - container.scrollTop - container.clientHeight <
       100;
@@ -332,7 +454,7 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
           body: JSON.stringify({
             likedBy: userId,
           }),
-        }
+        },
       );
 
       if (response.ok) {
@@ -420,6 +542,15 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
           gap: 1,
         }}
       >
+        {/* ✅ NEW: Loading indicator at top */}
+        {loadingOlder && (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+            <CircularProgress size="sm" />
+          </Box>
+        )}
+
+        <div ref={messagesTopRef} />
+
         {Object.entries(messageGroups).map(([date, msgs]) => (
           <Box key={date}>
             {/* Date Divider */}

@@ -9,27 +9,27 @@ import {
   Avatar,
   Divider,
 } from "@mui/joy";
-import { School, Plus } from "lucide-react";
+import { BriefcaseBusiness, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { fetchEdu } from "../../lib/helpers";
-import EducationModal from "../modals/normal/education-modal";
+import { fetchWork } from "../../lib/helpers";
+import PositionModal from "../modals/normal/position-modal";
 
-export default function EducationCard({ profile, requestedBy }) {
-  const [fetchedEdu, setFetchedEdu] = useState(null);
+export default function WorkCard({ profile, requestedBy }) {
+  const [fetchedWork, setFetchedWork] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
   useEffect(() => {
     if (!profile?.userId) return;
 
-    const loadEdu = async () => {
-      const data = await fetchEdu(profile.userId);
-      setFetchedEdu(data);
+    const loadWork = async () => {
+      const data = await fetchWork(profile.userId);
+      setFetchedWork(data);
     };
 
-    loadEdu();
+    loadWork();
   }, [profile?.userId]);
 
-  const educationList = fetchedEdu?.education || [];
+  const workList = fetchedWork?.work || [];
   const isOwnProfile =
     profile?.userId &&
     requestedBy?.meta?.user_id &&
@@ -52,7 +52,7 @@ export default function EducationCard({ profile, requestedBy }) {
               level="h3"
               sx={{ fontFamily: "Roboto Condensed", display: "flex", gap: 2 }}
             >
-              <School size={30} /> Education
+              <BriefcaseBusiness size={30} /> Work Experience
             </Typography>
 
             {isOwnProfile && (
@@ -64,14 +64,14 @@ export default function EducationCard({ profile, requestedBy }) {
 
           {/* Content */}
           <Box sx={{ mt: 2 }}>
-            {educationList.length === 0 && (
+            {workList.length === 0 && (
               <Typography level="body-md" color="neutral.500">
-                No education details added yet.
+                No Work details added yet.
               </Typography>
             )}
 
-            {educationList.map((edu, index) => (
-              <Box key={edu.education_id}>
+            {workList.map((work, index) => (
+              <Box key={work.work_id}>
                 <Box sx={{ display: "flex", gap: 2 }}>
                   {/* School Logo Placeholder */}
                   <Avatar
@@ -82,49 +82,35 @@ export default function EducationCard({ profile, requestedBy }) {
                       fontWeight: 600,
                     }}
                   >
-                    {edu.school_name?.[0]}
+                    {work.company?.[0]}
                   </Avatar>
 
                   {/* Details */}
                   <Box sx={{ flex: 1 }}>
-                    <Typography level="title-md">{edu.school_name}</Typography>
+                    <Typography level="title-md">{work.company}</Typography>
 
                     <Typography level="body-md">
-                      {edu.degree}
-                      {edu.field_of_study ? ` · ${edu.field_of_study}` : ""}
+                      {work.title}
+                      {work.type}
                     </Typography>
 
                     <Typography level="body-sm" color="neutral.500">
-                      {formatDate(edu.start_date)} –{" "}
-                      {edu.currently_studying
+                      {formatDate(work.start_date)} –{" "}
+                      {work.currently_working
                         ? "Present"
-                        : formatDate(edu.end_date)}
+                        : formatDate(work.end_date)}
                     </Typography>
 
-                    {edu.grade && (
+                    {work.description && (
                       <Typography level="body-sm" sx={{ mt: 0.5 }}>
-                        <strong>Grade:</strong> {edu.grade}
-                      </Typography>
-                    )}
-
-                    {edu.activities && (
-                      <Typography level="body-sm" sx={{ mt: 0.5 }}>
-                        <strong>Activities:</strong> {edu.activities}
-                      </Typography>
-                    )}
-
-                    {edu.description && (
-                      <Typography level="body-sm" sx={{ mt: 0.5 }}>
-                        {edu.description}
+                        {work.description}
                       </Typography>
                     )}
                   </Box>
                 </Box>
 
                 {/* Divider */}
-                {index !== educationList.length - 1 && (
-                  <Divider sx={{ my: 2 }} />
-                )}
+                {index !== workList.length - 1 && <Divider sx={{ my: 2 }} />}
               </Box>
             ))}
           </Box>
@@ -132,7 +118,7 @@ export default function EducationCard({ profile, requestedBy }) {
       </Card>
 
       {/* Education Modal goes here */}
-      <EducationModal
+      <PositionModal
         open={openModal}
         close={() => {
           setOpenModal(false);

@@ -20,6 +20,7 @@ import AboutMeModal from "../modals/about-modal";
 import WebsiteAdderModal from "../modals/brands/add-website-modal";
 import IndustryAdderModal from "../modals/brands/industry-modal";
 import CompanyhQModal from "../modals/brands/company&hq-modal";
+import PositionModal from "../modals/normal/position-modal";
 
 export default function AddProfileSectionModal({
   open,
@@ -213,6 +214,13 @@ export default function AddProfileSectionModal({
           setComphqModal(false);
         }}
         owner={requestedBy}
+      />
+
+      <PositionModal
+        open={workModal}
+        close={() => {
+          setWorkModal(false);
+        }}
       />
     </>
   );
