@@ -117,7 +117,7 @@ export default function HomeNavbar() {
                 letterSpacing: "-0.5px",
               }}
             >
-              in
+              up
             </Typography>
           </Link>
 

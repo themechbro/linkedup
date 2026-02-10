@@ -76,7 +76,7 @@ export default function PostCard({
     media = [];
   }
   const [likes, setLikes] = useState(post.likes || 0);
-  const [liked, setLiked] = useState(post.liked_by_me);
+  const [liked, setLiked] = useState(false);
   const [openComment, setOpenComment] = useState(false);
   const [comments, setComments] = useState(post.comments || []);
   const [newComment, setNewComment] = useState(null);
@@ -109,6 +109,7 @@ export default function PostCard({
     open: false,
     type: "success",
   });
+  const [commentLength, setCommentLength] = useState(0);
 
   // Functions
   const handleCommentAdded = (comment) => {
@@ -359,6 +360,31 @@ export default function PostCard({
       setConnLoading(false);
     }
   };
+
+  const commentLengthFetch = async (postId) => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts/comment_length?post_id=${postId}`,
+        {
+          method: "GET",
+          credentials: "include",
+        },
+      );
+
+      const fetchedLength = await res.json();
+      setCommentLength(fetchedLength.length);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    setLiked(post?.liked_by_me);
+  }, [post]);
+
+  useEffect(() => {
+    commentLengthFetch(post?.id);
+  }, [post]);
 
   return (
     <>
@@ -754,29 +780,25 @@ export default function PostCard({
                 </Typography>
               </Box>
             )}
-            {post.comment_count > 0 && (
-              <Box className="comment-counts" sx={{ display: "flex", gap: 1 }}>
-                <Typography
-                  level="body-sm"
-                  color="neutral"
-                  onClick={() => setOpenComment(true)}
-                  sx={{ cursor: "pointer", textDecoration: "underline" }}
-                >
-                  {post.comment_count} comments
-                </Typography>
-                {post.repost_count > 0 ? (
-                  <Box>
-                    <Typography
-                      level="body-sm"
-                      color="neutral"
-                      sx={{ cursor: "pointer", textDecoration: "underline" }}
-                    >
-                      {post.repost_count} reposts
-                    </Typography>
-                  </Box>
-                ) : null}
-              </Box>
-            )}
+            <Box className="comment-counts" sx={{ display: "flex", gap: 1 }}>
+              <Typography
+                level="body-sm"
+                color="neutral"
+                onClick={() => setOpenComment(true)}
+                sx={{ cursor: "pointer", textDecoration: "underline" }}
+              >
+                {commentLength} {commentLength === 1 ? "comment" : "comments"}
+              </Typography>
+
+              <Typography
+                level="body-sm"
+                color="neutral"
+                sx={{ cursor: "pointer", textDecoration: "underline" }}
+              >
+                {post.repost_count}{" "}
+                {post.repost_count === 1 ? "repost" : "reposts"}
+              </Typography>
+            </Box>
           </Box>
 
           <Divider />

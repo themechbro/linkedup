@@ -12,12 +12,12 @@ import {
 import { Heart, MessageCircle, Repeat2, Send, ThumbsUp } from "lucide-react";
 import { renderContentWithHashtagsAndLinks } from "@/app/(dashboard)/components/post/lib/helpers";
 import ImagegridModal from "@/app/(dashboard)/components/post/ImageGrid/imageModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PostLikedList from "@/app/(dashboard)/components/post/liked-list/postliked_list";
 import Image from "next/image";
 import { repostPost } from "@/app/(dashboard)/components/post/lib/helpers";
 import RepostSnackbar from "./repostSnackbar";
-
+import VideoPlayer from "@/app/(dashboard)/components/post/player/videoPlayer";
 export default function ViewPostCard({ post, requested_by }) {
   const [mediaViewer, setMediaViewer] = useState({
     open: false,
@@ -26,14 +26,16 @@ export default function ViewPostCard({ post, requested_by }) {
   });
   const [openLiked, setOpenLiked] = useState(false);
   const [likes, setLikes] = useState(post?.likes || 0);
-  const [liked, setLiked] = useState(
-    post?.liked_by?.includes(requested_by) || false
-  );
+  const [liked, setLiked] = useState(false);
   const [repostSnack, setRepostSnack] = useState({
     open: false,
     type: "",
   });
   if (!post) return null;
+
+  useEffect(() => {
+    setLiked(Boolean(post?.liked_by?.includes(requested_by)));
+  }, [post?.liked_by, requested_by]);
 
   const isRepost = Boolean(post.repost_of && post.original_post);
   const media =
@@ -61,7 +63,7 @@ export default function ViewPostCard({ post, requested_by }) {
         {
           method: "POST",
           credentials: "include",
-        }
+        },
       );
       const data = await res.json();
       if (res.ok) {
@@ -300,12 +302,12 @@ function MediaGrid({ media, onMediaClick }) {
               media.length === 1
                 ? "1fr"
                 : media.length === 2
-                ? "1fr 1fr"
-                : media.length === 3
-                ? "repeat(2, 1fr)"
-                : media.length === 4
-                ? "repeat(2, 1fr)"
-                : "repeat(3, 1fr)",
+                  ? "1fr 1fr"
+                  : media.length === 3
+                    ? "repeat(2, 1fr)"
+                    : media.length === 4
+                      ? "repeat(2, 1fr)"
+                      : "repeat(3, 1fr)",
           }}
         >
           {media.slice(0, 5).map((m, i) => {
@@ -323,8 +325,8 @@ function MediaGrid({ media, onMediaClick }) {
                     media.length === 1
                       ? "400px"
                       : media.length === 2
-                      ? "300px"
-                      : "200px",
+                        ? "300px"
+                        : "200px",
                   overflow: "hidden",
                   bgcolor: "black",
                   cursor: "pointer",
@@ -338,7 +340,10 @@ function MediaGrid({ media, onMediaClick }) {
                       height: "300px",
                     }),
                 }}
-                onClick={() => onMediaClick(i)}
+                // onClick={() => openMediaViewer(i)}
+                onClick={() => {
+                  if (!isVideo) onMediaClick(i);
+                }}
               >
                 {isLastItem ? (
                   <>
@@ -368,14 +373,8 @@ function MediaGrid({ media, onMediaClick }) {
                     </Box>
                   </>
                 ) : isVideo ? (
-                  <video
+                  <VideoPlayer
                     src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      pointerEvents: "none",
-                    }}
                   />
                 ) : (
                   <Image

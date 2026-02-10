@@ -28,7 +28,7 @@ export default function CommentList({ post_id, newComment }) {
   const fetchCommentLikes = async (comment_id) => {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_IP_MICRO}/api/comments/${comment_id}/likes`
+        `${process.env.NEXT_PUBLIC_HOST_IP_MICRO}/api/comments/${comment_id}/likes`,
       );
       const data = await res.json();
       return data["Total Likes"] || 0;
@@ -61,13 +61,13 @@ export default function CommentList({ post_id, newComment }) {
         ...c,
         likes: c.likes + 1,
         isLiked: true,
-      }))
+      })),
     );
 
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_HOST_IP_MICRO}/api/comments/${comment_id}/like`,
-        { method: "POST" }
+        { method: "POST" },
       );
       const data = await res.json();
 
@@ -75,7 +75,7 @@ export default function CommentList({ post_id, newComment }) {
         updateCommentTree(prev, comment_id, (c) => ({
           ...c,
           likes: data.likes,
-        }))
+        })),
       );
     } catch (err) {
       console.error(err);
@@ -88,13 +88,13 @@ export default function CommentList({ post_id, newComment }) {
         ...c,
         likes: Math.max(c.likes - 1, 0),
         isLiked: false,
-      }))
+      })),
     );
 
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_HOST_IP_MICRO}/api/comments/${comment_id}/unlike`,
-        { method: "POST" }
+        { method: "POST" },
       );
       const data = await res.json();
 
@@ -102,7 +102,7 @@ export default function CommentList({ post_id, newComment }) {
         updateCommentTree(prev, comment_id, (c) => ({
           ...c,
           likes: data.likes,
-        }))
+        })),
       );
     } catch (err) {
       console.error(err);
@@ -115,7 +115,7 @@ export default function CommentList({ post_id, newComment }) {
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts/${post_id}/comments`,
-          { credentials: "include", cache: "no-store" }
+          { credentials: "include", cache: "no-store" },
         );
         const data = await res.json();
         if (res.ok) {
@@ -123,7 +123,7 @@ export default function CommentList({ post_id, newComment }) {
             (data.comments || []).map(async (c) => {
               const likes = await fetchCommentLikes(c.comment_id);
               return { ...c, likes };
-            })
+            }),
           );
 
           setComments(commentsWithLikes);
@@ -138,11 +138,16 @@ export default function CommentList({ post_id, newComment }) {
   }, [post_id]);
 
   // ✅ Add new top-level comment instantly
+  // useEffect(() => {
+  //   if (newComment && newComment.post_id === post_id) {
+  //     setComments((prev) => [newComment, ...prev]);
+  //   }
+  // }, [newComment, post_id]);
+
   useEffect(() => {
-    if (newComment && newComment.post_id === post_id) {
-      setComments((prev) => [newComment, ...prev]);
-    }
-  }, [newComment, post_id]);
+    if (!newComment) return;
+    setComments((prev) => [newComment, ...prev]);
+  }, [newComment]);
 
   // ✅ Add reply instantly when child composer submits successfully
   const handleReplyAdded = (reply, parentId) => {
@@ -150,8 +155,8 @@ export default function CommentList({ post_id, newComment }) {
       prevComments.map((comment) =>
         comment.comment_id === parentId
           ? { ...comment, replies: [reply, ...(comment.replies || [])] }
-          : comment
-      )
+          : comment,
+      ),
     );
   };
 

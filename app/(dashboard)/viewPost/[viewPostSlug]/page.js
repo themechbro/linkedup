@@ -60,7 +60,7 @@ export default function ViewPostPageSlug({ post }) {
           width: "100%",
         }}
       >
-        <ViewPostCard post={data?.data} requested_by={data?.requested_by} />
+        <ViewPostCard post={data?.data} requested_by={data?.request_by} />
       </Box>
       <Box
         sx={{
@@ -83,14 +83,14 @@ export default function ViewPostPageSlug({ post }) {
             </Typography>
           </Box>
           <Box sx={{ overflow: "auto" }}>
-            <CommentList
-              post_id={data?.data?.id}
-              onCommentAdded={handleCommentAdded}
-            />
+            <CommentList post_id={data?.data?.id} newComment={newComment} />
           </Box>
         </Card>
 
-        <CommentComposer post_id={data?.data?.id} newComment={newComment} />
+        <CommentComposer
+          post_id={data?.data?.id}
+          onCommentAdded={handleCommentAdded}
+        />
 
         {/* <LinkedupNewsCard /> */}
       </Box>
