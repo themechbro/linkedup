@@ -109,7 +109,6 @@ export default function PostCard({
     open: false,
     type: "success",
   });
-  const [commentLength, setCommentLength] = useState(0);
 
   // Functions
   const handleCommentAdded = (comment) => {
@@ -361,29 +360,8 @@ export default function PostCard({
     }
   };
 
-  const commentLengthFetch = async (postId) => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts/comment_length?post_id=${postId}`,
-        {
-          method: "GET",
-          credentials: "include",
-        },
-      );
-
-      const fetchedLength = await res.json();
-      setCommentLength(fetchedLength.length);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   useEffect(() => {
     setLiked(post?.liked_by_me);
-  }, [post]);
-
-  useEffect(() => {
-    commentLengthFetch(post?.id);
   }, [post]);
 
   return (
@@ -787,7 +765,8 @@ export default function PostCard({
                 onClick={() => setOpenComment(true)}
                 sx={{ cursor: "pointer", textDecoration: "underline" }}
               >
-                {commentLength} {commentLength === 1 ? "comment" : "comments"}
+                {post?.commentCount ?? 0}{" "}
+                {(post?.commentCount ?? 0) === 1 ? "comment" : "comments"}
               </Typography>
 
               <Typography

@@ -52,7 +52,7 @@ export default function PostComposer({ currentUser, onSucess, otherUserData }) {
         setContent("");
         setMedia([]);
         setOpen(false);
-        onSucess();
+        onSucess(data.post);
       }
     } catch (err) {
       console.error("Error posting:", err);
@@ -65,7 +65,7 @@ export default function PostComposer({ currentUser, onSucess, otherUserData }) {
   const urlbuilder = () => {
     if (currentUser.profile_picture) {
       setFinalUrl(
-        `${process.env.NEXT_PUBLIC_HOST_IP}${currentUser.profile_picture}`
+        `${process.env.NEXT_PUBLIC_HOST_IP}${currentUser.profile_picture}`,
       );
     }
   };

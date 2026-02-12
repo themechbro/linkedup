@@ -490,7 +490,7 @@ import { RefreshCw } from "lucide-react";
 import { lazy, Suspense } from "react";
 const PostCard = lazy(() => import("./postCard.js"));
 
-export default function PostFeed() {
+export default function PostFeed({ uploadedPost }) {
   const FEED_MODE = "micro";
   const LIMIT = 10;
   const REFRESH_INTERVAL = 3660000; // 6minutes
@@ -571,7 +571,12 @@ export default function PostFeed() {
           if (incomingPosts.length > 0 && isRefresh) {
             markPostAsSeen(incomingPosts[0].id);
           }
-          return incomingPosts;
+          // return incomingPosts;
+          const existingIds = new Set(incomingPosts.map((p) => p.postId));
+
+          const localOnly = prev.filter((p) => !existingIds.has(p.postId));
+
+          return [...localOnly, ...incomingPosts];
         }
 
         const existingIds = new Set(prev.map((p) => p.id));
@@ -616,6 +621,7 @@ export default function PostFeed() {
         username: post.username,
         liked_by_me: post.liked_by_me,
         connection_status: post.connection_status,
+        commentCount: post.commentCount,
       };
 
       if (post.repostOf && post.repostedPost) {
@@ -734,6 +740,19 @@ export default function PostFeed() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [posts.length]);
 
+  // Plug in uploadedPost to feed
+  useEffect(() => {
+    if (!uploadedPost) return;
+
+    setPosts((prev) => {
+      const exists = prev.some((p) => p.postId === uploadedPost.postId);
+
+      if (exists) return prev;
+
+      return [uploadedPost, ...prev];
+    });
+  }, [uploadedPost]);
+
   // -------------------------------------------------------
   // Intersection Observer
   // -------------------------------------------------------
@@ -845,9 +864,9 @@ export default function PostFeed() {
         </Tooltip>
       </Box>
 
-      {posts.map((post) => (
+      {posts.map((post, index) => (
         <PostCard
-          key={post.id}
+          key={index}
           post={post}
           loadingIni={loadingInitial}
           onPostDeleted={(id) => {

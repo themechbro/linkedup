@@ -11,6 +11,7 @@ import { useEffect, useState, useCallback } from "react";
 
 export default function HomePage() {
   const [fetchedData, setFetchedData] = useState({});
+  const [uploadedPost, setUploadedPost] = useState(null);
   const fetchUser = useCallback(async () => {
     try {
       const response = await fetch(
@@ -31,6 +32,10 @@ export default function HomePage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUser();
   }, [fetchUser]); // Now fetchUser is stable
+
+  const handlePostSuccess = (newPost) => {
+    setUploadedPost(newPost);
+  };
   return (
     <Box
       sx={{
@@ -83,9 +88,10 @@ export default function HomePage() {
             user_id: fetchedData?.userData?.user_id,
           }}
           otherUserData={fetchedData}
+          onSucess={handlePostSuccess}
         />
         <Divider></Divider>
-        <PostFeed />
+        <PostFeed uploadedPost={uploadedPost} />
       </Box>
 
       {/* Right Sidebar */}

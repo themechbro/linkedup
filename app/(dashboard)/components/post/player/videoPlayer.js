@@ -26,6 +26,18 @@ export default function VideoPlayer({ src }) {
   const [ended, setEnded] = useState(false);
   const [buffering, setBuffering] = useState(false);
 
+  // Sprite State
+  const [previewTime, setPreviewTime] = useState(null);
+  const [previewX, setPreviewX] = useState(0);
+  const [showPreview, setShowPreview] = useState(false);
+
+  const videoId = src?.split("/hls/")[1]?.split("/")[0];
+  const spriteUrl = `${process.env.NEXT_PUBLIC_HOST_IP}/sprites/${videoId}/sprite.jpg`;
+  const SPRITE_WIDTH = 160;
+  const SPRITE_HEIGHT = 90;
+  const SPRITE_COLS = 10;
+  const INTERVAL = 5;
+
   /* ---------------- HLS SETUP ---------------- */
   useEffect(() => {
     const video = videoRef.current;
@@ -101,6 +113,19 @@ export default function VideoPlayer({ src }) {
       if (hls) hls.destroy();
     };
   }, [src]);
+
+  /*------------Sprite-------------*/
+  const getSpritePosition = (time) => {
+    const index = Math.floor(time / INTERVAL);
+
+    const col = index % SPRITE_COLS;
+    const row = Math.floor(index / SPRITE_COLS);
+
+    return {
+      x: -(col * SPRITE_WIDTH),
+      y: -(row * SPRITE_HEIGHT),
+    };
+  };
 
   /* ---------------- CONTROLS ---------------- */
 
@@ -342,10 +367,44 @@ export default function VideoPlayer({ src }) {
         }}
       >
         {/* PROGRESS BAR */}
+
+        {showPreview && previewTime !== null && (
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: 70,
+              left: previewX - SPRITE_WIDTH / 2,
+              width: SPRITE_WIDTH,
+              height: SPRITE_HEIGHT,
+              backgroundImage: `url(${spriteUrl})`,
+              backgroundPosition: `${
+                getSpritePosition(previewTime).x
+              }px ${getSpritePosition(previewTime).y}px`,
+              backgroundRepeat: "no-repeat",
+              borderRadius: "8px",
+              border: "2px solid white",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+              pointerEvents: "none",
+              zIndex: 20,
+            }}
+          />
+        )}
+
         <Slider
           value={progress}
           onChange={handleSeek}
           size="sm"
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+
+            const time = percent * duration;
+
+            setPreviewTime(time);
+            setPreviewX(e.clientX - rect.left);
+            setShowPreview(true);
+          }}
+          onMouseLeave={() => setShowPreview(false)}
           sx={{
             mb: 2,
             "--Slider-trackSize": "5px",
