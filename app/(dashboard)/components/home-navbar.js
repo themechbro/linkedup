@@ -17,6 +17,7 @@ import { useState, useEffect } from "react";
 import { Menu, Search } from "lucide-react";
 import NavDropdown from "./nav-dropdown";
 import { getSocket } from "../messages/components/utils/socket";
+import SearchBar from "./search/searchBar";
 
 export default function HomeNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -31,10 +32,11 @@ export default function HomeNavbar() {
     setMobileOpen((prevState) => !prevState);
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    console.log("Searching for:", searchQuery);
-  };
+  // const handleSearch = (e) => {
+  //   e.preventDefault();
+  //   console.log("Searching for:", searchQuery);
+  // };
+
   const socket = getSocket();
 
   // Socket Connection
@@ -121,30 +123,8 @@ export default function HomeNavbar() {
             </Typography>
           </Link>
 
-          <Box
-            component="form"
-            onSubmit={handleSearch}
-            sx={{ display: { xs: "none", md: "block" } }}
-          >
-            <Input
-              placeholder="Search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              startDecorator={<Search size={18} />}
-              sx={{
-                width: "280px",
-                backgroundColor: "#eef3f8",
-                border: "none",
-                "&:hover": {
-                  backgroundColor: "#e0e7ee",
-                },
-                "&:focus-within": {
-                  backgroundColor: "#fff",
-                  boxShadow: "0 0 0 2px #0a66c2",
-                },
-              }}
-            />
-          </Box>
+          {/* Search Bar */}
+          <SearchBar />
         </Box>
 
         {/* Center Section: Navigation Items - Desktop */}
@@ -240,19 +220,8 @@ export default function HomeNavbar() {
           pb: 1,
         }}
       >
-        <form onSubmit={handleSearch}>
-          <Input
-            placeholder="Search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            startDecorator={<Search size={18} />}
-            sx={{
-              width: "100%",
-              backgroundColor: "#eef3f8",
-              border: "none",
-            }}
-          />
-        </form>
+        {/* Search Mobile */}
+        <SearchBar />
       </Box>
 
       {/* Mobile Drawer */}
