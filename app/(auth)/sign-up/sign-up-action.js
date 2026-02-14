@@ -43,25 +43,44 @@ export async function SignupAction(prevState, formData) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password, username, full_name }),
-      }
+      },
     );
     const data = await response.json();
-    if (!response.ok) {
-      const errorMessage = data.message;
+    // RATE LIMIT
+    if (response.status === 429) {
       return {
+        success: false,
         errors: {
-          server: errorMessage,
+          server: data.message || "Too many signup attempts. Try again later.",
         },
+        type: "rate_limit",
       };
     }
 
-    return { success: data, errors: null };
+    // SERVER VALIDATION
+    if (!response.ok) {
+      return {
+        success: false,
+        errors: {
+          server: data.message || "Signup failed",
+        },
+        type: "server",
+      };
+    }
+
+    return {
+      success: true,
+      message: data.message || "Account created successfully",
+      errors: null,
+    };
   } catch (error) {
     console.error("Error during Signup", error);
     return {
+      success: false,
       errors: {
-        server: "Oh Snap! Something went wrong. Please try again later.",
+        server: "Server unreachable. Please try again later.",
       },
+      type: "network",
     };
   }
 }
