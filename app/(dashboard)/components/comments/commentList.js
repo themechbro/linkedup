@@ -24,19 +24,6 @@ export default function CommentList({ post_id, newComment }) {
   const [loading, setLoading] = useState(true);
   const [replyingTo, setReplyingTo] = useState(null);
 
-  // Fetching likes in a comment
-  const fetchCommentLikes = async (comment_id) => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_HOST_IP_MICRO}/api/comments/${comment_id}/likes`,
-      );
-      const data = await res.json();
-      return data["Total Likes"] || 0;
-    } catch (err) {
-      console.error("Error fetching likes for comment:", err);
-      return 0;
-    }
-  };
   const updateCommentTree = (list, targetId, updateFn) => {
     return list.map((c) => {
       if (c.comment_id === targetId) {
@@ -119,14 +106,7 @@ export default function CommentList({ post_id, newComment }) {
         );
         const data = await res.json();
         if (res.ok) {
-          let commentsWithLikes = await Promise.all(
-            (data.comments || []).map(async (c) => {
-              const likes = await fetchCommentLikes(c.comment_id);
-              return { ...c, likes };
-            }),
-          );
-
-          setComments(commentsWithLikes);
+          setComments(data.comments);
         }
       } catch (err) {
         console.error("Error fetching comments:", err);
