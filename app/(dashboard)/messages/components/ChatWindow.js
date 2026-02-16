@@ -92,18 +92,6 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
   }, []);
 
   useEffect(() => {
-    if (userId) {
-      fetchMessages();
-      fetchUserInfo();
-
-      // Poll for new messages every 3 seconds (changed from 30000)
-      const interval = setInterval(fetchMessages, 3000);
-      return () => clearInterval(interval);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
-
-  useEffect(() => {
     if (messages.length > 0) {
       if (isInitialLoad.current) {
         scrollToBottom(false);
@@ -230,16 +218,16 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
   };
 
   // ✅ MODIFIED: Update initial fetch
-  useEffect(() => {
-    if (userId) {
-      fetchMessages(false); // Initial load
-      fetchUserInfo();
+  // useEffect(() => {
+  //   if (userId) {
+  //     fetchMessages(false); // Initial load
+  //     fetchUserInfo();
 
-      // Poll for new messages only (not old ones)
-      const interval = setInterval(() => fetchMessages(false), 3000);
-      return () => clearInterval(interval);
-    }
-  }, [userId]);
+  //     // Poll for new messages only (not old ones)
+  //     const interval = setInterval(() => fetchMessages(false), 3000);
+  //     return () => clearInterval(interval);
+  //   }
+  // }, [userId]);
 
   // ✅ NEW: Maintain scroll position after loading older messages
   useEffect(() => {
@@ -264,7 +252,7 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
       fetchUserInfo();
 
       // Poll for new messages only (not old ones)
-      const interval = setInterval(() => fetchMessages(false), 3000);
+      const interval = setInterval(() => fetchMessages(false), 30000);
       return () => clearInterval(interval);
     }
   }, [userId]); // This triggers when userId changes
