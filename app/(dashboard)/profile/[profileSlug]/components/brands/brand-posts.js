@@ -3,8 +3,11 @@ import { Box } from "@mui/joy";
 import { useState, useEffect } from "react";
 import PostCard from "@/app/(dashboard)/components/post/postCard";
 import { EMPTY_POST } from "./utils/helpers";
+import BrandPostCard from "./brandPostCardprofile";
 
 export default function BrandPostPage({ profile }) {
+  console.log(profile);
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -40,7 +43,9 @@ export default function BrandPostPage({ profile }) {
   return (
     <Box sx={{ width: "100%", maxWidth: 900, mx: "auto", p: 4 }}>
       {posts.map((p) => (
-        <PostCard key={p.id} post={p || EMPTY_POST} />
+        // <PostCard key={p.id} post={p || EMPTY_POST} />
+
+        <BrandPostCard post={p} brand={profile} />
       ))}
     </Box>
   );

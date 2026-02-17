@@ -7,10 +7,11 @@ export default function ConnectionButtons({
   localStatus,
   acceptConnection,
   rejectConnection,
+  requestedBy,
 }) {
   return (
     <>
-      {post.owner !== post.current_user && (
+      {post.owner !== requestedBy && (
         <>
           {localStatus === "not_connected" && (
             <Button onClick={handleConnect}>Connect</Button>

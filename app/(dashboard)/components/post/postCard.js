@@ -429,6 +429,7 @@ export default function PostCard({
                 localStatus={localStatus}
                 acceptConnection={handleAccept}
                 rejectConnection={handleReject}
+                requestedBy={requestedBy}
               />
               {/* Dropdown Menu */}
               <Dropdown>
