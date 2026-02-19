@@ -22,7 +22,7 @@ import {
   Repeat,
   EllipsisVertical,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import CommentComposer from "../comments/comment-composer";
 import CommentList from "../comments/commentList";
@@ -364,6 +364,12 @@ export default function PostCard({
     setLiked(post?.liked_by_me);
   }, [post]);
 
+  // Memoization
+  const renderContent = useMemo(() => {
+    if (!post.content) return "";
+    return renderContentWithHashtagsAndLinks(post.content);
+  }, [post.content]);
+
   return (
     <>
       <Card variant="outlined" sx={{ borderRadius: "lg" }}>
@@ -474,8 +480,15 @@ export default function PostCard({
           </Box>
 
           {/* Content */}
-          <Typography level="body-md" sx={{ mb: 2, whiteSpace: "pre-wrap" }}>
-            {renderContentWithHashtagsAndLinks(post.content)}
+          <Typography
+            level="body-md"
+            sx={{
+              mb: 2,
+              whiteSpace: "pre-wrap",
+              minHeight: "48px",
+            }}
+          >
+            {renderContent}
           </Typography>
 
           {/* 🔄 ORIGINAL POST CONTENT (inside repost) */}

@@ -67,6 +67,7 @@ export default function BrandPostPage({ profile }) {
   const [loading, setLoading] = useState(false);
 
   const [hasMore, setHasMore] = useState(true);
+  const [req, setReq] = useState("");
 
   const observerRef = useRef(null);
 
@@ -108,6 +109,7 @@ export default function BrandPostPage({ profile }) {
       setHasMore(data.hasMore);
 
       setOffset(newOffset + LIMIT);
+      setReq(data.requestedBy);
     } catch (error) {
       console.error("Fetch posts error:", error);
     } finally {
@@ -170,7 +172,7 @@ export default function BrandPostPage({ profile }) {
           );
         }
 
-        return <BrandPostCard key={post.id} post={post} />;
+        return <BrandPostCard key={post.id} post={post} requestedBy={req} />;
       })}
 
       {loading && (
