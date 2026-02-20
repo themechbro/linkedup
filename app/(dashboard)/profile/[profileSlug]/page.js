@@ -9,6 +9,7 @@ import TabforProfileBrands from "./components/brands/tablist";
 import BrandAboutPage from "./components/brands/brand-about";
 import BrandPostPage from "./components/brands/brand-posts";
 import WorkCard from "./components/normal/work-card";
+import BrandJobPage from "./components/brands/brand-jobs";
 export default function ViewProfilePage({ params }) {
   const path = usePathname();
   const user_id = path.split("/")[2]?.trim();
@@ -72,6 +73,12 @@ export default function ViewProfilePage({ params }) {
           {chosenPage == 1 ? (
             <Box sx={{ mt: 1 }}>
               <BrandPostPage profile={data} />
+            </Box>
+          ) : null}
+
+          {chosenPage == 2 ? (
+            <Box sx={{ mt: 1 }}>
+              <BrandJobPage profile={data} />
             </Box>
           ) : null}
         </Box>
