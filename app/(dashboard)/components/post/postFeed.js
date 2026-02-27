@@ -493,7 +493,7 @@ const PostCard = lazy(() => import("./postCard.js"));
 export default function PostFeed({ uploadedPost }) {
   const FEED_MODE = "micro";
   const LIMIT = 10;
-  const REFRESH_INTERVAL = 3660000; // 6minutes
+  const REFRESH_INTERVAL = 36600000; // 16minutes
 
   const [posts, setPosts] = useState([]);
   const [loadingInitial, setLoadingInitial] = useState(true);
@@ -709,17 +709,12 @@ export default function PostFeed({ uploadedPost }) {
   useEffect(() => {
     if (posts.length === 0) return;
 
-    refreshIntervalRef.current = setInterval(() => {
+    const interval = setInterval(() => {
       checkForNewPosts();
     }, REFRESH_INTERVAL);
 
-    return () => {
-      if (refreshIntervalRef.current) {
-        clearInterval(refreshIntervalRef.current);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [posts.length]);
+    return () => clearInterval(interval);
+  }, []); // ❗ no dependency
 
   // Load first page
   useEffect(() => {

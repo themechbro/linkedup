@@ -63,12 +63,19 @@ export default function HomeNavbar() {
         );
         const messagesData = await messagesRes.json();
 
+        const notifiRes = await fetch(
+          `${process.env.NEXT_PUBLIC_HOST_IP}/api/notifications/notifications/unread-count`,
+          { credentials: "include" },
+        );
+        const notData = await notifiRes.json();
+        console.log(notData);
+
         // You can add notifications count here later
         // const notificationsRes = await fetch(...);
 
         setBadges({
           messages: messagesData.success ? messagesData.unread_count : 0,
-          notifications: 0, // Add your notifications count here
+          notifications: Number(notData.unreadCount) || 0, // Add your notifications count here
         });
       } catch (err) {
         console.error("Error fetching unread counts:", err);
