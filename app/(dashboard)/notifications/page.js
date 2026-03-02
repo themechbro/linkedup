@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { getSocket } from "../messages/components/utils/socket";
+import { redirect } from "next/navigation";
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -40,7 +41,7 @@ export default function NotificationsPage() {
       }
 
       setUnreadCount(data.unreadCount);
-      setHasMore(data.pagination.hasMore);
+      setHasMore(data.pagination?.hasMore);
       setOffset(newOffset + LIMIT);
     } catch (err) {
       console.error("Failed to fetch notifications", err);
@@ -105,20 +106,20 @@ export default function NotificationsPage() {
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
-        {notifications.length === 0 && (
+        {notifications?.length === 0 && (
           <div className="p-6 text-gray-500 text-center">
             No notifications yet
           </div>
         )}
 
-        {notifications.map((n) => (
+        {/* {notifications.map((n) => (
           <div
             key={n.id}
             className={`flex gap-4 p-4 border-b last:border-none transition ${
               !n.is_read ? "bg-blue-50" : "bg-white"
             }`}
           >
-            {/* Actor Avatar */}
+            
             <img
               src={
                 `${process.env.NEXT_PUBLIC_HOST_IP}${n.profile_picture}` ||
@@ -143,7 +144,61 @@ export default function NotificationsPage() {
               <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
             )}
           </div>
-        ))}
+        ))} */}
+
+        {notifications.map((n) => {
+          const truncated =
+            n.post_content && n.post_content.length > 120
+              ? n.post_content.slice(0, 120) + "..."
+              : n.post_content;
+
+          return (
+            <div
+              key={n.id}
+              className={`p-4 border-b last:border-none transition ${
+                !n.is_read ? "bg-blue-50" : "bg-white"
+              }`}
+            >
+              <div className="flex gap-4">
+                {/* Actor Avatar */}
+                <img
+                  src={
+                    n.profile_picture
+                      ? `${process.env.NEXT_PUBLIC_HOST_IP}${n.profile_picture}`
+                      : "/default-avatar.png"
+                  }
+                  alt="avatar"
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+
+                <div className="flex-1">
+                  {/* Notification Text */}
+                  <p className="text-sm">{renderMessage(n)}</p>
+
+                  <p className="text-xs text-gray-500 mt-1">
+                    {new Date(n.created_at).toLocaleString()}
+                  </p>
+
+                  {/* Post Preview Card */}
+                  {n.entity_type === "post" && n.post_content && (
+                    <div
+                      className="mt-3 border rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition cursor-pointer"
+                      onClick={() => {
+                        redirect(`/viewPost/${n.post_id}`);
+                      }}
+                    >
+                      <p className="text-sm text-gray-700">{truncated}</p>
+                    </div>
+                  )}
+                </div>
+
+                {!n.is_read && (
+                  <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
+                )}
+              </div>
+            </div>
+          );
+        })}
 
         {hasMore && (
           <div ref={loaderRef} className="p-4 text-center text-gray-400">

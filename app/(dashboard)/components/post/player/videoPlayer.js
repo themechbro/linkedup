@@ -16,6 +16,8 @@ import Hls from "hls.js";
 export default function VideoPlayer({ src }) {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
+  const hlsRef = useRef(null);
+  const [hlsInitialized, setHlsInitialized] = useState(false);
 
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -38,26 +40,26 @@ export default function VideoPlayer({ src }) {
   const SPRITE_COLS = 10;
   const INTERVAL = 5;
 
-  /* ---------------- HLS SETUP ---------------- */
-  useEffect(() => {
+  const initHls = () => {
+    if (hlsInitialized) return;
+
     const video = videoRef.current;
-    let hls;
+    if (!video) return;
 
     if (Hls.isSupported()) {
-      hls = new Hls({
+      const hls = new Hls({
         maxBufferLength: 15,
         maxMaxBufferLength: 30,
         lowLatencyMode: false,
         backBufferLength: 10,
+        autoStartLoad: true, // default true
       });
 
       hls.loadSource(src);
       hls.attachMedia(video);
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        if (video.duration) {
-          setDuration(video.duration);
-        }
+        setDuration(video.duration);
       });
 
       hls.on(Hls.Events.BUFFER_STALLED, () => {
@@ -67,9 +69,47 @@ export default function VideoPlayer({ src }) {
       hls.on(Hls.Events.FRAG_BUFFERED, () => {
         setBuffering(false);
       });
+
+      hlsRef.current = hls;
     } else {
       video.src = src;
     }
+
+    setHlsInitialized(true);
+  };
+
+  /* ---------------- HLS SETUP ---------------- */
+  useEffect(() => {
+    const video = videoRef.current;
+    let hls;
+
+    // if (Hls.isSupported()) {
+    //   hls = new Hls({
+    //     maxBufferLength: 15,
+    //     maxMaxBufferLength: 30,
+    //     lowLatencyMode: false,
+    //     backBufferLength: 10,
+    //   });
+
+    //   hls.loadSource(src);
+    //   hls.attachMedia(video);
+
+    //   hls.on(Hls.Events.MANIFEST_PARSED, () => {
+    //     if (video.duration) {
+    //       setDuration(video.duration);
+    //     }
+    //   });
+
+    //   hls.on(Hls.Events.BUFFER_STALLED, () => {
+    //     setBuffering(true);
+    //   });
+
+    //   hls.on(Hls.Events.FRAG_BUFFERED, () => {
+    //     setBuffering(false);
+    //   });
+    // } else {
+    //   video.src = src;
+    // }
 
     const updateProgress = () => {
       if (!video.duration) return;
@@ -129,17 +169,26 @@ export default function VideoPlayer({ src }) {
 
   /* ---------------- CONTROLS ---------------- */
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     const v = videoRef.current;
     if (!v) return;
+
+    if (!hlsInitialized) {
+      initHls();
+    }
 
     if (ended) {
       v.currentTime = 0;
       setEnded(false);
     }
 
-    playing ? v.pause() : v.play();
-    setPlaying(!playing);
+    if (playing) {
+      v.pause();
+      setPlaying(false);
+    } else {
+      await v.play();
+      setPlaying(true);
+    }
   };
 
   const seekBy = (seconds) => {
@@ -214,6 +263,7 @@ export default function VideoPlayer({ src }) {
       <video
         ref={videoRef}
         onClick={togglePlay}
+        preload="none"
         style={{
           width: "100%",
           height: "100%",
