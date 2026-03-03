@@ -68,8 +68,6 @@ export default function HomeNavbar() {
           { credentials: "include" },
         );
         const notData = await notifiRes.json();
-        console.log(notData);
-
         // You can add notifications count here later
         // const notificationsRes = await fetch(...);
 

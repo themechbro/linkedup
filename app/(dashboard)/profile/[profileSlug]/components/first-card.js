@@ -75,10 +75,7 @@ export default function ProfileFirst({ profile = {}, requestedBy, isLoading }) {
   // Connection Count
   useEffect(() => {
     const fetchConnectionCount = async () => {
-      console.log("🔍 Fetching connection count for:", profile.userId); // 👈 ADD THIS
-
       if (!profile.userId) {
-        console.log("⚠️ No userId found"); // 👈 ADD THIS
         return;
       }
 
@@ -86,26 +83,19 @@ export default function ProfileFirst({ profile = {}, requestedBy, isLoading }) {
 
       try {
         const url = `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/connection_length_user?user_id=${profile.userId}`;
-        console.log("📡 Calling URL:", url); // 👈 ADD THIS
-
         const connectionCountRes = await fetch(url, {
           method: "GET",
           credentials: "include",
         });
 
-        console.log("📥 Response status:", connectionCountRes.status); // 👈 ADD THIS
-
         if (!connectionCountRes.ok) {
-          console.error("❌ Failed to fetch connection count");
           return;
         }
 
         const data1 = await connectionCountRes.json();
-        console.log("📦 Received data:", data1); // 👈 ADD THIS
 
         if (data1.success) {
           setFetchConnectCount(data1);
-          console.log("✅ State updated:", data1); // 👈 ADD THIS
         }
       } catch (err) {
         console.error("💥 Error fetching connection count:", err);

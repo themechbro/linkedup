@@ -99,7 +99,7 @@ export async function sendConnectionRequest(receiver_id) {
 }
 
 // Accept Request
-export async function acceptConnection(sender_id) {
+export async function acceptConnection(sender_id, notif_id) {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/accept`,
@@ -107,7 +107,7 @@ export async function acceptConnection(sender_id) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ sender_id }),
+        body: JSON.stringify({ sender_id, notif_id }),
       },
     );
 
@@ -124,7 +124,7 @@ export async function acceptConnection(sender_id) {
 }
 
 // Reject Request
-export async function rejectConnection(sender_id) {
+export async function rejectConnection(sender_id, notif_id) {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_HOST_IP}/api/connections/reject`,
@@ -132,7 +132,7 @@ export async function rejectConnection(sender_id) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ sender_id }),
+        body: JSON.stringify({ sender_id, notif_id }),
       },
     );
 

@@ -33,8 +33,6 @@ export default function PostFeed({ uploadedPost }) {
 
   const markPostAsSeen = async (postId) => {
     try {
-      console.log("📌 Marking post as seen:", postId);
-
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts/markPostAsSeen`,
         {
@@ -50,10 +48,8 @@ export default function PostFeed({ uploadedPost }) {
       }
 
       const data = await response.json();
-      console.log("✅ Post marked as seen successfully:", data);
       return true;
     } catch (err) {
-      console.error("❌ Error marking post as seen:", err);
       return false;
     }
   };
