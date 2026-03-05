@@ -54,6 +54,37 @@ export default function PostCard({
   onConnectionStatusChanged,
   requestedBy,
 }) {
+  const privateMediaHosts = (
+    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS ||
+    "blr1.kos.olakrutrimsvc.com"
+  )
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+
+  const resolveAssetUrl = (url) => {
+    if (!url) return "";
+
+    if (/^(https?:)?\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        if (privateMediaHosts.includes(parsed.hostname.toLowerCase())) {
+          return `/api/private-media?url=${encodeURIComponent(url)}`;
+        }
+      } catch {
+        return url;
+      }
+      return url;
+    }
+
+    const base = process.env.NEXT_PUBLIC_HOST_IP || "";
+    if (!base) return url;
+
+    const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `${normalizedBase}${normalizedPath}`;
+  };
+
   useEffect(() => {
     setLikes(post.likes || 0);
     setLiked(post.liked_by_me || false); // ✅ TRUST BACKEND
@@ -75,6 +106,11 @@ export default function PostCard({
   } catch {
     media = [];
   }
+  const normalizedMedia = media.map((m) => ({
+    ...m,
+    url: resolveAssetUrl(m?.url),
+    sprite_url: resolveAssetUrl(m?.sprite_url),
+  }));
   const [likes, setLikes] = useState(post.likes || 0);
   const [liked, setLiked] = useState(false);
   const [openComment, setOpenComment] = useState(false);
@@ -282,6 +318,11 @@ export default function PostCard({
     post.original_post && typeof post.original_post.media_url === "string"
       ? JSON.parse(post.original_post.media_url)
       : post.original_post?.media_url || [];
+  const normalizedOriginalMedia = originalMedia.map((m) => ({
+    ...m,
+    url: resolveAssetUrl(m?.url),
+    sprite_url: resolveAssetUrl(m?.sprite_url),
+  }));
 
   // Media
   const openMediaViewer = (index) => {
@@ -402,7 +443,7 @@ export default function PostCard({
               <Avatar
                 src={
                   post?.profile_picture
-                    ? `${process.env.NEXT_PUBLIC_HOST_IP}${post.profile_picture}`
+                    ? resolveAssetUrl(post.profile_picture)
                     : "/default.img"
                 }
               />
@@ -509,7 +550,7 @@ export default function PostCard({
                 <Avatar
                   src={
                     post.original_post.profile_picture
-                      ? `${process.env.NEXT_PUBLIC_HOST_IP}${post.original_post.profile_picture}`
+                      ? resolveAssetUrl(post.original_post.profile_picture)
                       : "/default.img"
                   }
                 />
@@ -541,7 +582,7 @@ export default function PostCard({
               </Typography>
 
               {/* Original Post Media */}
-              {originalMedia.length > 0 && (
+              {normalizedOriginalMedia.length > 0 && (
                 <Box
                   sx={{
                     display: "grid",
@@ -550,21 +591,22 @@ export default function PostCard({
                     borderRadius: "lg",
                     overflow: "hidden",
                     gridTemplateColumns:
-                      originalMedia.length === 1
+                      normalizedOriginalMedia.length === 1
                         ? "1fr"
-                        : originalMedia.length === 2
+                        : normalizedOriginalMedia.length === 2
                           ? "1fr 1fr"
-                          : originalMedia.length === 3
+                          : normalizedOriginalMedia.length === 3
                             ? "repeat(2, 1fr)"
-                            : originalMedia.length === 4
+                            : normalizedOriginalMedia.length === 4
                               ? "repeat(2, 1fr)"
                               : "repeat(3, 1fr)",
                   }}
                 >
-                  {originalMedia.slice(0, 5).map((m, i) => {
+                  {normalizedOriginalMedia.slice(0, 5).map((m, i) => {
                     const isVideo = m.type === "videos";
-                    const isLastItem = i === 4 && originalMedia.length > 5;
-                    const remainingCount = originalMedia.length - 5;
+                    const isLastItem =
+                      i === 4 && normalizedOriginalMedia.length > 5;
+                    const remainingCount = normalizedOriginalMedia.length - 5;
 
                     return (
                       <Box
@@ -573,9 +615,9 @@ export default function PostCard({
                           position: "relative",
                           width: "100%",
                           height:
-                            originalMedia.length === 1
+                            normalizedOriginalMedia.length === 1
                               ? "400px"
-                              : originalMedia.length === 2
+                              : normalizedOriginalMedia.length === 2
                                 ? "300px"
                                 : "200px",
                           overflow: "hidden",
@@ -585,7 +627,7 @@ export default function PostCard({
                           "&:hover": {
                             transform: "scale(1.02)",
                           },
-                          ...(originalMedia.length === 3 &&
+                          ...(normalizedOriginalMedia.length === 3 &&
                             i === 0 && {
                               gridColumn: "span 2",
                               height: "300px",
@@ -595,7 +637,7 @@ export default function PostCard({
                         {isLastItem ? (
                           <>
                             <Image
-                              src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                              src={m.url}
                               alt="post media"
                               fill
                               style={{
@@ -621,7 +663,7 @@ export default function PostCard({
                           </>
                         ) : isVideo ? (
                           <video
-                            src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                            src={m.url}
                             style={{
                               width: "100%",
                               height: "100%",
@@ -631,7 +673,7 @@ export default function PostCard({
                           />
                         ) : (
                           <Image
-                            src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                            src={m.url}
                             alt="post media"
                             fill
                             style={{ objectFit: "cover" }}
@@ -647,7 +689,7 @@ export default function PostCard({
           )}
 
           {/* Media */}
-          {media.length > 0 && (
+          {normalizedMedia.length > 0 && (
             <Box
               sx={{
                 display: "grid",
@@ -656,21 +698,21 @@ export default function PostCard({
                 borderRadius: "lg",
                 overflow: "hidden",
                 gridTemplateColumns:
-                  media.length === 1
+                  normalizedMedia.length === 1
                     ? "1fr"
-                    : media.length === 2
+                    : normalizedMedia.length === 2
                       ? "1fr 1fr"
-                      : media.length === 3
+                      : normalizedMedia.length === 3
                         ? "repeat(2, 1fr)"
-                        : media.length === 4
+                        : normalizedMedia.length === 4
                           ? "repeat(2, 1fr)"
                           : "repeat(3, 1fr)",
               }}
             >
-              {media.slice(0, 5).map((m, i) => {
+              {normalizedMedia.slice(0, 5).map((m, i) => {
                 const isVideo = m.type === "videos";
-                const isLastItem = i === 4 && media.length > 5;
-                const remainingCount = media.length - 5;
+                const isLastItem = i === 4 && normalizedMedia.length > 5;
+                const remainingCount = normalizedMedia.length - 5;
 
                 return (
                   <Box
@@ -679,9 +721,9 @@ export default function PostCard({
                       position: "relative",
                       width: "100%",
                       height:
-                        media.length === 1
+                        normalizedMedia.length === 1
                           ? "400px"
-                          : media.length === 2
+                          : normalizedMedia.length === 2
                             ? "300px"
                             : "200px",
                       overflow: "hidden",
@@ -691,7 +733,7 @@ export default function PostCard({
                       "&:hover": {
                         transform: "scale(1.02)",
                       },
-                      ...(media.length === 3 &&
+                      ...(normalizedMedia.length === 3 &&
                         i === 0 && {
                           gridColumn: "span 2",
                           height: "300px",
@@ -705,10 +747,7 @@ export default function PostCard({
                     {isLastItem ? (
                       <>
                         <Image
-                          src={
-                            // `${process.env.NEXT_PUBLIC_HOST_IP}${m.url}` ||
-                            `${m.url}`
-                          }
+                          src={m.url}
                           alt="post media"
                           fill
                           style={{
@@ -734,17 +773,12 @@ export default function PostCard({
                       </>
                     ) : isVideo ? (
                       <VideoPlayer
-                        src={
-                          `${process.env.NEXT_PUBLIC_HOST_IP}${m.url}` ||
-                          `${m.url}`
-                        }
+                        src={m.url}
+                        spriteSrc={m.sprite_url}
                       />
                     ) : (
                       <Image
-                        src={
-                          // `${process.env.NEXT_PUBLIC_HOST_IP}${m.url}` ||
-                          `${m.url}`
-                        }
+                        src={m.url}
                         alt="post media"
                         fill
                         style={{ objectFit: "cover" }}
@@ -891,7 +925,7 @@ export default function PostCard({
         mediaViewer={mediaViewer}
         closeMediaViewer={closeMediaViewer}
         setMediaViewer={setMediaViewer}
-        media={media}
+        media={normalizedMedia}
       />
 
       {/* Repost Post Viewer Modal */}

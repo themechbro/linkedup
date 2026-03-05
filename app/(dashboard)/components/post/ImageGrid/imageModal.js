@@ -112,15 +112,12 @@ export default function ImagegridModal({
             //   }}
             // />
             <VideoPlayer
-              src={`${process.env.NEXT_PUBLIC_HOST_IP}${
-                media[mediaViewer.currentIndex].url
-              }`}
+              src={media[mediaViewer.currentIndex].url}
+              spriteSrc={media[mediaViewer.currentIndex].sprite_url}
             />
           ) : (
             <img
-              src={`${process.env.NEXT_PUBLIC_HOST_IP}${
-                media[mediaViewer.currentIndex]?.url
-              }`}
+              src={media[mediaViewer.currentIndex]?.url}
               alt="media"
               style={{
                 maxWidth: "100%",

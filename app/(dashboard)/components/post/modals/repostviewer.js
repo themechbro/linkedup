@@ -17,6 +17,36 @@ export default function RepostViewerModal({ repostedPost, open, close }) {
     open: false,
     currentIndex: 0,
   });
+  const privateMediaHosts = (
+    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS ||
+    "blr1.kos.olakrutrimsvc.com"
+  )
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+
+  const resolveAssetUrl = (url) => {
+    if (!url) return "";
+
+    if (/^(https?:)?\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        if (privateMediaHosts.includes(parsed.hostname.toLowerCase())) {
+          return `/api/private-media?url=${encodeURIComponent(url)}`;
+        }
+      } catch {
+        return url;
+      }
+      return url;
+    }
+
+    const base = process.env.NEXT_PUBLIC_HOST_IP || "";
+    if (!base) return url;
+
+    const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `${normalizedBase}${normalizedPath}`;
+  };
   const openMediaViewer = (index) => {
     setMediaViewer({ open: true, currentIndex: index });
   };
@@ -24,10 +54,20 @@ export default function RepostViewerModal({ repostedPost, open, close }) {
   const closeMediaViewer = () => {
     setMediaViewer({ open: false, currentIndex: 0 });
   };
-  const originalMedia =
-    repostedPost && typeof repostedPost.media_url === "string"
-      ? JSON.parse(repostedPost.media_url)
-      : repostedPost?.media_url || [];
+  let originalMedia = [];
+  try {
+    originalMedia =
+      repostedPost && typeof repostedPost.media_url === "string"
+        ? JSON.parse(repostedPost.media_url)
+        : repostedPost?.media_url || [];
+  } catch {
+    originalMedia = [];
+  }
+  const normalizedOriginalMedia = originalMedia.map((m) => ({
+    ...m,
+    url: resolveAssetUrl(m?.url),
+    sprite_url: resolveAssetUrl(m?.sprite_url),
+  }));
   return (
     <>
       <Modal open={open} onClose={close}>
@@ -60,7 +100,7 @@ export default function RepostViewerModal({ repostedPost, open, close }) {
                   <Avatar
                     src={
                       repostedPost?.profile_picture
-                        ? `${process.env.NEXT_PUBLIC_HOST_IP}${repostedPost.profile_picture}`
+                        ? resolveAssetUrl(repostedPost.profile_picture)
                         : "/default.img"
                     }
                   />
@@ -102,10 +142,10 @@ export default function RepostViewerModal({ repostedPost, open, close }) {
             </Box>
 
             {/* Media */}
-            {originalMedia.length > 0 ? (
+            {normalizedOriginalMedia.length > 0 ? (
               <Box sx={{ width: 700 }}>
                 {/* Original Post Media */}
-                {originalMedia.length > 0 && (
+                {normalizedOriginalMedia.length > 0 && (
                   <Box
                     sx={{
                       display: "grid",
@@ -114,21 +154,22 @@ export default function RepostViewerModal({ repostedPost, open, close }) {
                       borderRadius: "lg",
                       overflow: "hidden",
                       gridTemplateColumns:
-                        originalMedia.length === 1
+                        normalizedOriginalMedia.length === 1
                           ? "1fr"
-                          : originalMedia.length === 2
+                          : normalizedOriginalMedia.length === 2
                           ? "1fr 1fr"
-                          : originalMedia.length === 3
+                          : normalizedOriginalMedia.length === 3
                           ? "repeat(2, 1fr)"
-                          : originalMedia.length === 4
+                          : normalizedOriginalMedia.length === 4
                           ? "repeat(2, 1fr)"
                           : "repeat(3, 1fr)",
                     }}
                   >
-                    {originalMedia.slice(0, 5).map((m, i) => {
+                    {normalizedOriginalMedia.slice(0, 5).map((m, i) => {
                       const isVideo = m.type === "videos";
-                      const isLastItem = i === 4 && originalMedia.length > 5;
-                      const remainingCount = originalMedia.length - 5;
+                      const isLastItem =
+                        i === 4 && normalizedOriginalMedia.length > 5;
+                      const remainingCount = normalizedOriginalMedia.length - 5;
 
                       return (
                         <Box
@@ -137,9 +178,9 @@ export default function RepostViewerModal({ repostedPost, open, close }) {
                             position: "relative",
                             width: "100%",
                             height:
-                              originalMedia.length === 1
+                              normalizedOriginalMedia.length === 1
                                 ? "400px"
-                                : originalMedia.length === 2
+                                : normalizedOriginalMedia.length === 2
                                 ? "300px"
                                 : "200px",
                             overflow: "hidden",
@@ -149,7 +190,7 @@ export default function RepostViewerModal({ repostedPost, open, close }) {
                             "&:hover": {
                               transform: "scale(1.02)",
                             },
-                            ...(originalMedia.length === 3 &&
+                            ...(normalizedOriginalMedia.length === 3 &&
                               i === 0 && {
                                 gridColumn: "span 2",
                                 height: "300px",
@@ -160,7 +201,7 @@ export default function RepostViewerModal({ repostedPost, open, close }) {
                           {isLastItem ? (
                             <>
                               <Image
-                                src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                                src={m.url}
                                 alt="post media"
                                 fill
                                 style={{
@@ -186,7 +227,7 @@ export default function RepostViewerModal({ repostedPost, open, close }) {
                             </>
                           ) : isVideo ? (
                             <video
-                              src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                              src={m.url}
                               style={{
                                 width: "100%",
                                 height: "100%",
@@ -196,7 +237,7 @@ export default function RepostViewerModal({ repostedPost, open, close }) {
                             />
                           ) : (
                             <Image
-                              src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                              src={m.url}
                               alt="post media"
                               fill
                               style={{ objectFit: "cover" }}
@@ -218,7 +259,7 @@ export default function RepostViewerModal({ repostedPost, open, close }) {
         mediaViewer={mediaViewer}
         closeMediaViewer={closeMediaViewer}
         setMediaViewer={setMediaViewer}
-        media={originalMedia}
+        media={normalizedOriginalMedia}
       />
     </>
   );

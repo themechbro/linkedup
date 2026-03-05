@@ -58,6 +58,7 @@ export default function BrandPostCard({ post, requestedBy }) {
   const [mediaViewer, setMediaViewer] = useState({
     open: false,
     currentIndex: 0,
+    media: [],
   });
   const [likes, setLikes] = useState(post.likes || 0);
   const [liked, setLiked] = useState(false);
@@ -78,6 +79,37 @@ export default function BrandPostCard({ post, requestedBy }) {
     open: false,
     type: "",
   });
+  const privateMediaHosts = (
+    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS ||
+    "blr1.kos.olakrutrimsvc.com"
+  )
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+
+  const resolveAssetUrl = (url) => {
+    if (!url) return "";
+
+    if (/^(https?:)?\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        if (privateMediaHosts.includes(parsed.hostname.toLowerCase())) {
+          return `/api/private-media?url=${encodeURIComponent(url)}`;
+        }
+      } catch {
+        return url;
+      }
+      return url;
+    }
+
+    const base = process.env.NEXT_PUBLIC_HOST_IP || "";
+    if (!base) return url;
+
+    const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `${normalizedBase}${normalizedPath}`;
+  };
+
   const isRepost = !!post.repostedPost;
   let media = [];
   try {
@@ -88,6 +120,11 @@ export default function BrandPostCard({ post, requestedBy }) {
   } catch {
     media = [];
   }
+  const normalizedMedia = media.map((m) => ({
+    ...m,
+    url: resolveAssetUrl(m?.url),
+    sprite_url: resolveAssetUrl(m?.sprite_url),
+  }));
 
   let mediaR = [];
 
@@ -99,6 +136,11 @@ export default function BrandPostCard({ post, requestedBy }) {
   } catch {
     mediaR = [];
   }
+  const normalizedRepostMedia = mediaR.map((m) => ({
+    ...m,
+    url: resolveAssetUrl(m?.url),
+    sprite_url: resolveAssetUrl(m?.sprite_url),
+  }));
 
   const renderMediaGrid = (mediaArray) => {
     if (!mediaArray?.length) return null;
@@ -156,13 +198,13 @@ export default function BrandPostCard({ post, requestedBy }) {
                   }),
               }}
               onClick={() => {
-                if (!isVideo) openMediaViewer(i);
+                if (!isVideo) openMediaViewer(i, mediaArray);
               }}
             >
               {isLastItem ? (
                 <>
                   <Image
-                    src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                    src={m.url}
                     alt="post media"
                     fill
                     style={{
@@ -188,11 +230,12 @@ export default function BrandPostCard({ post, requestedBy }) {
                 </>
               ) : isVideo ? (
                 <VideoPlayer
-                  src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                  src={m.url}
+                  spriteSrc={m.sprite_url}
                 />
               ) : (
                 <Image
-                  src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                  src={m.url}
                   alt="post media"
                   fill
                   style={{ objectFit: "cover" }}
@@ -206,12 +249,12 @@ export default function BrandPostCard({ post, requestedBy }) {
     );
   };
 
-  const openMediaViewer = (index) => {
-    setMediaViewer({ open: true, currentIndex: index });
+  const openMediaViewer = (index, mediaList = []) => {
+    setMediaViewer({ open: true, currentIndex: index, media: mediaList });
   };
 
   const closeMediaViewer = () => {
-    setMediaViewer({ open: false, currentIndex: 0 });
+    setMediaViewer({ open: false, currentIndex: 0, media: [] });
   };
 
   const handleLike = async () => {
@@ -325,7 +368,7 @@ export default function BrandPostCard({ post, requestedBy }) {
             <Avatar
               src={
                 post.profile_picture
-                  ? `${process.env.NEXT_PUBLIC_HOST_IP}${post.profile_picture}`
+                  ? resolveAssetUrl(post.profile_picture)
                   : ""
               }
             />
@@ -410,7 +453,7 @@ export default function BrandPostCard({ post, requestedBy }) {
                 size="sm"
                 src={
                   post.repostedPost.profile_picture
-                    ? `${process.env.NEXT_PUBLIC_HOST_IP}${post.repostedPost.profile_picture}`
+                    ? resolveAssetUrl(post.repostedPost.profile_picture)
                     : ""
                 }
               />
@@ -435,12 +478,12 @@ export default function BrandPostCard({ post, requestedBy }) {
 
             {/* Original Media */}
             {/* {renderMedia(post.repostedPost.media_url)} */}
-            {renderMediaGrid(mediaR)}
+            {renderMediaGrid(normalizedRepostMedia)}
           </Card>
         ) : (
           // renderMedia(post.media_url)
 
-          renderMediaGrid(media)
+          renderMediaGrid(normalizedMedia)
         )}
 
         {/* Stats */}
@@ -550,7 +593,7 @@ export default function BrandPostCard({ post, requestedBy }) {
         mediaViewer={mediaViewer}
         closeMediaViewer={closeMediaViewer}
         setMediaViewer={setMediaViewer}
-        media={media}
+        media={mediaViewer.media}
       />
       {isRepost ? (
         <RepostViewerModal

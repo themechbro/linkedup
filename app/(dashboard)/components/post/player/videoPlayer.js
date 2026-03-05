@@ -13,16 +13,18 @@ import {
 } from "lucide-react";
 import Hls from "hls.js";
 
-export default function VideoPlayer({ src }) {
+export default function VideoPlayer({ src, spriteSrc }) {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
   const hlsRef = useRef(null);
+  const lastSrcRef = useRef(null);
   const [hlsInitialized, setHlsInitialized] = useState(false);
 
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
   const [volume, setVolume] = useState(1);
   const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const [ended, setEnded] = useState(false);
@@ -33,20 +35,42 @@ export default function VideoPlayer({ src }) {
   const [previewX, setPreviewX] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
 
-  const videoId = src?.split("/hls/")[1]?.split("/")[0];
-  const spriteUrl = `${process.env.NEXT_PUBLIC_HOST_IP}/sprites/${videoId}/sprite.jpg`;
+  const resolveOriginalSource = (value) => {
+    if (!value) return "";
+    try {
+      const parsed = new URL(value, "http://localhost");
+      const proxied = parsed.searchParams.get("url");
+      return proxied ? decodeURIComponent(proxied) : value;
+    } catch {
+      return value;
+    }
+  };
+
+  const originalSource = resolveOriginalSource(src);
+  const isHlsSource = /\.m3u8($|\?)/i.test(originalSource);
+  const videoId = originalSource?.split("/hls/")[1]?.split("/")[0];
+  const spriteUrl =
+    spriteSrc ||
+    (videoId
+      ? `${process.env.NEXT_PUBLIC_HOST_IP}/sprites/${videoId}/sprite.jpg`
+      : "");
   const SPRITE_WIDTH = 160;
   const SPRITE_HEIGHT = 90;
   const SPRITE_COLS = 10;
   const INTERVAL = 5;
 
   const initHls = () => {
-    if (hlsInitialized) return;
+    if (hlsInitialized && lastSrcRef.current === src) return;
 
     const video = videoRef.current;
     if (!video) return;
 
-    if (Hls.isSupported()) {
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+
+    if (isHlsSource && Hls.isSupported()) {
       const hls = new Hls({
         maxBufferLength: 15,
         maxMaxBufferLength: 30,
@@ -73,15 +97,17 @@ export default function VideoPlayer({ src }) {
       hlsRef.current = hls;
     } else {
       video.src = src;
+      video.load();
     }
 
+    lastSrcRef.current = src;
     setHlsInitialized(true);
   };
 
   /* ---------------- HLS SETUP ---------------- */
   useEffect(() => {
     const video = videoRef.current;
-    let hls;
+    if (!video) return;
 
     // if (Hls.isSupported()) {
     //   hls = new Hls({
@@ -114,11 +140,13 @@ export default function VideoPlayer({ src }) {
     const updateProgress = () => {
       if (!video.duration) return;
       setProgress((video.currentTime / video.duration) * 100);
+      setCurrentTime(video.currentTime || 0);
     };
 
     const onLoadedMetadata = () => {
       if (video.duration && !isNaN(video.duration)) {
         setDuration(video.duration);
+        setCurrentTime(video.currentTime || 0);
       }
     };
 
@@ -150,7 +178,11 @@ export default function VideoPlayer({ src }) {
       video.removeEventListener("ended", onEnded);
       video.removeEventListener("waiting", onWaiting);
       video.removeEventListener("playing", onPlaying);
-      if (hls) hls.destroy();
+      if (hlsRef.current && lastSrcRef.current === src) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+      setHlsInitialized(false);
     };
   }, [src]);
 
@@ -196,6 +228,7 @@ export default function VideoPlayer({ src }) {
     if (!v || !v.duration) return;
 
     v.currentTime = Math.min(Math.max(0, v.currentTime + seconds), v.duration);
+    setCurrentTime(v.currentTime);
 
     if (ended) {
       setEnded(false);
@@ -209,6 +242,7 @@ export default function VideoPlayer({ src }) {
     if (!v || !v.duration) return;
     v.currentTime = (val / 100) * v.duration;
     setProgress(val);
+    setCurrentTime(v.currentTime);
   };
 
   const toggleMute = () => {
@@ -418,7 +452,7 @@ export default function VideoPlayer({ src }) {
       >
         {/* PROGRESS BAR */}
 
-        {showPreview && previewTime !== null && (
+        {showPreview && previewTime !== null && spriteUrl && (
           <Box
             sx={{
               position: "absolute",
@@ -559,7 +593,7 @@ export default function VideoPlayer({ src }) {
                 minWidth: "100px",
               }}
             >
-              {formatTime(videoRef.current?.currentTime)} /{" "}
+              {formatTime(currentTime)} /{" "}
               {formatTime(duration)}
             </Typography>
           </Box>
