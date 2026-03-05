@@ -90,8 +90,15 @@ export default function WorkCard({ profile, requestedBy }) {
                     <Typography level="title-md">{work.company}</Typography>
 
                     <Typography level="body-md">
-                      {work.title}
-                      {work.type}
+                      {work.title} •{" "}
+                      <span
+                        style={{
+                          fontWeight: 200,
+                          fontFamily: "Roboto Condensed",
+                        }}
+                      >
+                        {work.type}
+                      </span>
                     </Typography>
 
                     <Typography level="body-sm" color="neutral.500">

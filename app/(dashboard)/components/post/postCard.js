@@ -705,7 +705,10 @@ export default function PostCard({
                     {isLastItem ? (
                       <>
                         <Image
-                          src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                          src={
+                            // `${process.env.NEXT_PUBLIC_HOST_IP}${m.url}` ||
+                            `${m.url}`
+                          }
                           alt="post media"
                           fill
                           style={{
@@ -731,11 +734,17 @@ export default function PostCard({
                       </>
                     ) : isVideo ? (
                       <VideoPlayer
-                        src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                        src={
+                          `${process.env.NEXT_PUBLIC_HOST_IP}${m.url}` ||
+                          `${m.url}`
+                        }
                       />
                     ) : (
                       <Image
-                        src={`${process.env.NEXT_PUBLIC_HOST_IP}${m.url}`}
+                        src={
+                          // `${process.env.NEXT_PUBLIC_HOST_IP}${m.url}` ||
+                          `${m.url}`
+                        }
                         alt="post media"
                         fill
                         style={{ objectFit: "cover" }}

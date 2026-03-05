@@ -5,7 +5,7 @@ import { Info, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { fetchAbout } from "../../lib/helpers";
 import AboutMeModal from "../modals/about-modal";
-
+import SkillsSection from "./skill-card";
 export default function AboutCard({ profile, requestedBy, isLoading }) {
   const [fetchedAbout, setFetchedAbout] = useState(null);
   const [openModal, setOpenModal] = useState(false);
@@ -56,9 +56,23 @@ export default function AboutCard({ profile, requestedBy, isLoading }) {
           </Box>
 
           <Box>
-            <Typography sx={{ mt: 2, whiteSpace: "pre-line" }}>
+            <Typography
+              sx={{
+                mt: 2,
+                whiteSpace: "pre-line",
+                fontFamily: "Roboto Condensed",
+              }}
+            >
               {fetchedAbout?.about || "No about information added yet."}
             </Typography>
+          </Box>
+
+          <Box
+            sx={{
+              padding: 3,
+            }}
+          >
+            <SkillsSection profile={profile} />
           </Box>
         </CardContent>
       </Card>

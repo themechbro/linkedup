@@ -21,6 +21,7 @@ import WebsiteAdderModal from "../modals/brands/add-website-modal";
 import IndustryAdderModal from "../modals/brands/industry-modal";
 import CompanyhQModal from "../modals/brands/company&hq-modal";
 import PositionModal from "../modals/normal/position-modal";
+import SkillsModal from "../modals/normal/skill-modal";
 
 export default function AddProfileSectionModal({
   open,
@@ -62,7 +63,7 @@ export default function AddProfileSectionModal({
 
   return (
     <>
-      <Modal open={open} onClose={close}>
+      <Modal open={open} onClose={close} disableEnforceFocus>
         <ModalDialog sx={{ width: 400 }}>
           <ModalClose />
           <Box className="header" sx={{ position: "sticky" }}>
@@ -220,6 +221,13 @@ export default function AddProfileSectionModal({
         open={workModal}
         close={() => {
           setWorkModal(false);
+        }}
+      />
+
+      <SkillsModal
+        open={skillModal}
+        onClose={() => {
+          setSkillModal(false);
         }}
       />
     </>
