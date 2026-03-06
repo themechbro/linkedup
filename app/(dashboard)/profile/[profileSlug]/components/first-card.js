@@ -8,7 +8,6 @@ import {
   Tooltip,
   Skeleton,
 } from "@mui/joy";
-import Image from "next/image";
 import ProfilePictureModal from "./prof_picture-modal";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -22,6 +21,44 @@ import TabforProfileBrands from "./brands/tablist";
 
 export default function ProfileFirst({ profile = {}, requestedBy, isLoading }) {
   const router = useRouter();
+  const privateMediaHosts = (
+    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS ||
+    "blr1.kos.olakrutrimsvc.com"
+  )
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+
+  const resolveAssetUrl = (url) => {
+    if (!url) return "";
+
+    if (/^(https?:)?\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        if (privateMediaHosts.includes(parsed.hostname.toLowerCase())) {
+          return `/api/private-media?url=${encodeURIComponent(url)}`;
+        }
+      } catch {
+        return url;
+      }
+      return url;
+    }
+
+    const base = process.env.NEXT_PUBLIC_HOST_IP || "";
+    if (!base) return url;
+
+    const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `${normalizedBase}${normalizedPath}`;
+  };
+
+  const profileFallbackUrl = profileFallback?.src || profileFallback;
+  const coverFallbackUrl = coverFallback?.src || coverFallback;
+
+  const coverImageUrl = resolveAssetUrl(profile.coverPic) || coverFallbackUrl;
+  const profileImageUrl =
+    resolveAssetUrl(profile.profilePicture) || profileFallbackUrl;
+
   const [isOwner, setIsOwner] = useState(false);
   const [picModal, setPicModal] = useState({
     open: false,
@@ -39,10 +76,6 @@ export default function ProfileFirst({ profile = {}, requestedBy, isLoading }) {
   const [fetchConnectCount, setFetchConnectCount] = useState({});
   const [connectionCountLoading, setConnectionCountLoading] = useState(true);
   const [openAddSection, setOpenAddSection] = useState(false);
-
-  const coverImageUrl = profile.coverPic
-    ? `${process.env.NEXT_PUBLIC_HOST_IP}${profile.coverPic}`
-    : coverFallback;
 
   useEffect(() => {
     setIsOwner(requestedBy?.meta?.user_id === profile.userId);
@@ -396,18 +429,14 @@ export default function ProfileFirst({ profile = {}, requestedBy, isLoading }) {
                   setPicModal({
                     open: true,
                     type: "cover",
-                    imgUrl: profile.coverPic
-                      ? `${process.env.NEXT_PUBLIC_HOST_IP}${profile.coverPic}`
-                      : coverFallback,
+                    imgUrl: coverImageUrl,
                   });
                 }
               : () => {
                   setViewer({
                     open: true,
                     type: "cover",
-                    imgUrl: profile.coverPic
-                      ? `${process.env.NEXT_PUBLIC_HOST_IP}${profile.coverPic}`
-                      : coverFallback,
+                    imgUrl: coverImageUrl,
                   });
                 }
           }
@@ -418,11 +447,7 @@ export default function ProfileFirst({ profile = {}, requestedBy, isLoading }) {
       <Box sx={{ px: 3, pb: 3, mt: -8 }}>
         {/* Profile pic floating on cover */}
         <Avatar
-          src={
-            profile.profilePicture
-              ? `${process.env.NEXT_PUBLIC_HOST_IP}${profile.profilePicture}`
-              : profileFallback
-          }
+          src={profileImageUrl}
           sx={{
             width: 150,
             height: 150,
@@ -436,18 +461,14 @@ export default function ProfileFirst({ profile = {}, requestedBy, isLoading }) {
                   setPicModal({
                     open: true,
                     type: "profile",
-                    imgUrl: profile.profilePicture
-                      ? `${process.env.NEXT_PUBLIC_HOST_IP}${profile.profilePicture}`
-                      : profileFallback,
+                    imgUrl: profileImageUrl,
                   });
                 }
               : () => {
                   setViewer({
                     open: true,
                     type: "profile",
-                    imgUrl: profile.profilePicture
-                      ? `${process.env.NEXT_PUBLIC_HOST_IP}${profile.profilePicture}`
-                      : profileFallback,
+                    imgUrl: profileImageUrl,
                   });
                 }
           }

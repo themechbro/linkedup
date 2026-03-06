@@ -4,6 +4,40 @@ import { SquareArrowOutUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 export default function RightSideOfJobs({ selectedJob }) {
   const router = useRouter();
+  const privateMediaHosts = (
+    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS ||
+    "blr1.kos.olakrutrimsvc.com"
+  )
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+
+  const resolveAssetUrl = (url) => {
+    if (!url) return "";
+    if (/^\/api\/private-media\?url=/i.test(url)) return url;
+
+    if (/^(https?:)?\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        if (privateMediaHosts.includes(parsed.hostname.toLowerCase())) {
+          return `/api/private-media?url=${encodeURIComponent(url)}`;
+        }
+      } catch {
+        return url;
+      }
+      return url;
+    }
+
+    const base = process.env.NEXT_PUBLIC_HOST_IP || "";
+    if (!base) return url;
+
+    const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `${normalizedBase}${normalizedPath}`;
+  };
+
+  const postedByAvatar =
+    resolveAssetUrl(selectedJob?.posted_by_pic) || "/default.img";
 
   const handleApply = async (job_id, link) => {
     try {
@@ -28,9 +62,7 @@ export default function RightSideOfJobs({ selectedJob }) {
     <Card variant="outlined">
       <CardContent>
         <Box sx={{ display: "flex", gap: 3 }}>
-          <Avatar
-            src={`${process.env.NEXT_PUBLIC_HOST_IP}${selectedJob.posted_by_pic}`}
-          />{" "}
+          <Avatar src={postedByAvatar} />{" "}
           <Typography
             level="title-sm"
             sx={{ mt: 0.5, fontFamily: "Roboto Condensed" }}

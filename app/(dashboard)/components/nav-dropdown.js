@@ -19,6 +19,37 @@ import { useState, useEffect, useCallback } from "react";
 export default function NavDropdown() {
   const router = useRouter();
   const [fetchedData, setFetchedData] = useState(null);
+  const privateMediaHosts = (
+    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS ||
+    "blr1.kos.olakrutrimsvc.com"
+  )
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+
+  const resolveAssetUrl = (url) => {
+    if (!url) return "";
+    if (/^\/api\/private-media\?url=/i.test(url)) return url;
+
+    if (/^(https?:)?\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        if (privateMediaHosts.includes(parsed.hostname.toLowerCase())) {
+          return `/api/private-media?url=${encodeURIComponent(url)}`;
+        }
+      } catch {
+        return url;
+      }
+      return url;
+    }
+
+    const base = process.env.NEXT_PUBLIC_HOST_IP || "";
+    if (!base) return url;
+
+    const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `${normalizedBase}${normalizedPath}`;
+  };
 
   const fetchUser = useCallback(async () => {
     try {
@@ -52,6 +83,7 @@ export default function NavDropdown() {
   };
 
   const user = fetchedData?.userData;
+  const userAvatar = resolveAssetUrl(user?.profile_picture) || undefined;
 
   return (
     <Dropdown>
@@ -62,9 +94,7 @@ export default function NavDropdown() {
             size: "sm",
             variant: "outlined",
             sx: { cursor: "pointer" },
-            src: user?.profile_picture
-              ? `${process.env.NEXT_PUBLIC_HOST_IP}${user.profile_picture}`
-              : undefined,
+            src: userAvatar,
           },
         }}
       />
@@ -83,11 +113,7 @@ export default function NavDropdown() {
         <Box sx={{ display: "flex", gap: 1.5, p: 1 }}>
           <Avatar
             size="lg"
-            src={
-              user?.profile_picture
-                ? `${process.env.NEXT_PUBLIC_HOST_IP}${user.profile_picture}`
-                : undefined
-            }
+            src={userAvatar}
           />
           <Box>
             <Typography level="title-sm">

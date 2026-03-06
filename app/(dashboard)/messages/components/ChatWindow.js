@@ -37,6 +37,40 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
   const [offset, setOffset] = useState(0); // ✅ NEW
   const previousScrollHeight = useRef(0);
   const messagesTopRef = useRef(null);
+  const privateMediaHosts = (
+    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS ||
+    "blr1.kos.olakrutrimsvc.com"
+  )
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+
+  const resolveAssetUrl = (url) => {
+    if (!url) return "";
+    if (/^\/api\/private-media\?url=/i.test(url)) return url;
+
+    if (/^(https?:)?\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        if (privateMediaHosts.includes(parsed.hostname.toLowerCase())) {
+          return `/api/private-media?url=${encodeURIComponent(url)}`;
+        }
+      } catch {
+        return url;
+      }
+      return url;
+    }
+
+    const base = process.env.NEXT_PUBLIC_HOST_IP || "";
+    if (!base) return url;
+
+    const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `${normalizedBase}${normalizedPath}`;
+  };
+
+  const otherUserAvatar =
+    resolveAssetUrl(otherUser?.profilePicture) || "/default.img";
   //Socket
   useEffect(() => {
     socket.connect();
@@ -490,14 +524,7 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
           <ArrowLeft />
         </IconButton>
 
-        <Avatar
-          src={
-            otherUser?.profilePicture // ✅ FIXED: Was profile_picture, now profilePicture
-              ? `${process.env.NEXT_PUBLIC_HOST_IP}${otherUser.profilePicture}`
-              : "/default.img"
-          }
-          size="md"
-        />
+        <Avatar src={otherUserAvatar} size="md" />
 
         <Box
           sx={{ flex: 1, cursor: "pointer" }}
@@ -584,11 +611,7 @@ export default function ChatWindow({ userId, onBack, onNewMessage }) {
                 >
                   {!isCurrentUser && showAvatar && (
                     <Avatar
-                      src={
-                        otherUser?.profilePicture
-                          ? `${process.env.NEXT_PUBLIC_HOST_IP}${otherUser.profilePicture}`
-                          : "/default.img"
-                      }
+                      src={otherUserAvatar}
                       size="sm"
                       sx={{ mr: 1, alignSelf: "flex-end" }}
                     />

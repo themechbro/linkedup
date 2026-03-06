@@ -25,6 +25,37 @@ export default function ConversationList({
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [newConvModalOpen, setNewConvModalOpen] = useState(false);
+  const privateMediaHosts = (
+    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS ||
+    "blr1.kos.olakrutrimsvc.com"
+  )
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+
+  const resolveAssetUrl = (url) => {
+    if (!url) return "";
+    if (/^\/api\/private-media\?url=/i.test(url)) return url;
+
+    if (/^(https?:)?\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        if (privateMediaHosts.includes(parsed.hostname.toLowerCase())) {
+          return `/api/private-media?url=${encodeURIComponent(url)}`;
+        }
+      } catch {
+        return url;
+      }
+      return url;
+    }
+
+    const base = process.env.NEXT_PUBLIC_HOST_IP || "";
+    if (!base) return url;
+
+    const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `${normalizedBase}${normalizedPath}`;
+  };
 
   const filteredConversations = conversations.filter((conv) =>
     conv.other_user_name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -173,9 +204,8 @@ export default function ConversationList({
                   >
                     <Avatar
                       src={
-                        conv.other_user_picture
-                          ? `${process.env.NEXT_PUBLIC_HOST_IP}${conv.other_user_picture}`
-                          : "/default.img"
+                        resolveAssetUrl(conv.other_user_picture) ||
+                        "/default.img"
                       }
                       size="lg"
                     />

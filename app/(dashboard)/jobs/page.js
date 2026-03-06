@@ -1,110 +1,3 @@
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import {
-//   Box,
-//   Typography,
-//   Card,
-//   CardContent,
-//   Chip,
-//   Stack,
-//   CircularProgress,
-// } from "@mui/joy";
-// import RightSideOfJobs from "./components/rightSideJob";
-
-// export default function JobsPage() {
-//   const [jobs, setJobs] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [selectedJob, setSelectedJob] = useState(null);
-
-//   useEffect(() => {
-//     const fetchJobs = async () => {
-//       try {
-//         const res = await fetch(
-//           `${process.env.NEXT_PUBLIC_HOST_IP}/api/jobs/`,
-//           { credentials: "include" }
-//         );
-//         const data = await res.json();
-//         setJobs(data);
-//       } catch (err) {
-//         console.error("Failed to fetch jobs", err);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchJobs();
-//   }, []);
-
-//   if (loading) {
-//     return (
-//       <Box sx={{ display: "flex", justifyContent: "center", mt: 8 }}>
-//         <CircularProgress />
-//       </Box>
-//     );
-//   }
-
-//   return (
-//     <Box
-//       sx={{
-//         display: "grid",
-//         gridTemplateColumns: { xs: "1fr", md: "420px 1fr" },
-//         gap: 2,
-//         maxWidth: 1200,
-//         mx: "auto",
-//         mt: 3,
-//         px: 2,
-//       }}
-//     >
-//       {/* LEFT – JOB LIST */}
-//       <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-//         {jobs.map((job) => (
-//           <Card
-//             key={job.id}
-//             variant="outlined"
-//             sx={{
-//               cursor: "pointer",
-//               borderColor:
-//                 selectedJob?.id === job.id ? "primary.400" : "neutral.200",
-//             }}
-//             onClick={() => setSelectedJob(job)}
-//           >
-//             <CardContent>
-//               <Typography level="title-md">{job.title}</Typography>
-
-//               <Typography level="body-sm" sx={{ color: "neutral.600" }}>
-//                 {job.company} • {job.location}
-//               </Typography>
-
-//               <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-//                 <Chip size="sm" variant="soft">
-//                   {job.job_type}
-//                 </Chip>
-//                 {job.is_brand && (
-//                   <Chip size="sm" color="primary" variant="soft">
-//                     Verified
-//                   </Chip>
-//                 )}
-//               </Stack>
-//             </CardContent>
-//           </Card>
-//         ))}
-//       </Box>
-
-//       {/* RIGHT – JOB DETAILS */}
-//       <Box>
-//         {selectedJob ? (
-//           <RightSideOfJobs selectedJob={selectedJob} />
-//         ) : (
-//           <Typography level="body-md" sx={{ color: "neutral.500" }}>
-//             Select a job to view details
-//           </Typography>
-//         )}
-//       </Box>
-//     </Box>
-//   );
-// }
-
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -132,6 +25,7 @@ export default function JobsPage() {
   const isFetchingRef = useRef(false);
   const observerRef = useRef(null);
   const sentinelRef = useRef(null);
+  const jobsListRef = useRef(null);
 
   // Fetch jobs
   const fetchJobs = async (offset) => {
@@ -139,7 +33,7 @@ export default function JobsPage() {
       "🔍 Fetching jobs - Offset:",
       offset,
       "Current jobs:",
-      jobs.length
+      jobs.length,
     );
 
     if (isFetchingRef.current) {
@@ -155,7 +49,7 @@ export default function JobsPage() {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_HOST_IP}/api/jobs?limit=${LIMIT}&offset=${offset}`,
-        { credentials: "include" }
+        { credentials: "include" },
       );
 
       if (!res.ok) throw new Error("Failed to fetch jobs");
@@ -216,10 +110,10 @@ export default function JobsPage() {
         }
       },
       {
-        root: null,
+        root: jobsListRef.current,
         rootMargin: "200px",
         threshold: 0,
-      }
+      },
     );
 
     if (sentinelRef.current) {
@@ -229,6 +123,9 @@ export default function JobsPage() {
 
   useEffect(() => {
     initiateObserver();
+    return () => {
+      if (observerRef.current) observerRef.current.disconnect();
+    };
   }, [initiateObserver]);
 
   // Auto-select first job on initial load
@@ -271,6 +168,7 @@ export default function JobsPage() {
     >
       {/* LEFT – JOB LIST with Infinite Scroll */}
       <Box
+        ref={jobsListRef}
         sx={{
           display: "flex",
           flexDirection: "column",

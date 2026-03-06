@@ -55,8 +55,7 @@ export default function PostCard({
   requestedBy,
 }) {
   const privateMediaHosts = (
-    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS ||
-    "blr1.kos.olakrutrimsvc.com"
+    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS || "blr1.kos.olakrutrimsvc.com"
   )
     .split(",")
     .map((h) => h.trim().toLowerCase())
@@ -772,10 +771,7 @@ export default function PostCard({
                         </Box>
                       </>
                     ) : isVideo ? (
-                      <VideoPlayer
-                        src={m.url}
-                        spriteSrc={m.sprite_url}
-                      />
+                      <VideoPlayer src={m.url} spriteSrc={m.sprite_url} />
                     ) : (
                       <Image
                         src={m.url}

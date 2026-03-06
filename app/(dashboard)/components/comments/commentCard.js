@@ -28,6 +28,41 @@ export default function CommentCard({
   likeComment,
   unlikeComment,
 }) {
+  const privateMediaHosts = (
+    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS ||
+    "blr1.kos.olakrutrimsvc.com"
+  )
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+
+  const resolveAssetUrl = (url) => {
+    if (!url) return "";
+
+    if (/^(https?:)?\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        if (privateMediaHosts.includes(parsed.hostname.toLowerCase())) {
+          return `/api/private-media?url=${encodeURIComponent(url)}`;
+        }
+      } catch {
+        return url;
+      }
+      return url;
+    }
+
+    const base = process.env.NEXT_PUBLIC_HOST_IP || "";
+    if (!base) return url;
+
+    const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `${normalizedBase}${normalizedPath}`;
+  };
+
+  const profileSrc =
+    resolveAssetUrl(comment.profile_picture) || "/default-avatar.png";
+  const commentMediaSrc = resolveAssetUrl(comment.media_url);
+
   const isReplying = replyingTo === comment.comment_id;
   console.log(comment);
 
@@ -56,10 +91,7 @@ export default function CommentCard({
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             <Avatar
               size="sm"
-              src={
-                `${process.env.NEXT_PUBLIC_HOST_IP}${comment.profile_picture}` ||
-                "/default-avatar.png"
-              }
+              src={profileSrc}
               alt={comment.full_name}
             />
             <Box>
@@ -82,10 +114,10 @@ export default function CommentCard({
         </Typography>
 
         {/* Optional Image */}
-        {comment.media_url && (
+        {commentMediaSrc && (
           <Box sx={{ mt: 1 }}>
             <img
-              src={comment.media_url}
+              src={commentMediaSrc}
               alt="comment media"
               style={{
                 width: "100%",

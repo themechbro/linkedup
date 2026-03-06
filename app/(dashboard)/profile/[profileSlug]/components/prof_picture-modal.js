@@ -40,37 +40,6 @@ export default function ProfilePictureModal({
     setPreviewURL(imgUrl); // revert back to original
   };
 
-  // const handleSubmit = async () => {
-  //   if (!newImage) return;
-
-  //   const formData = new FormData();
-  //   formData.append("type", type);
-  //   formData.append("image", newImage);
-
-  //   try {
-  //     const res = await fetch(
-  //       `${process.env.NEXT_PUBLIC_HOST_IP}/api/upload/profile_pic`,
-  //       {
-  //         method: "POST",
-  //         credentials: "include",
-  //         body: formData,
-  //       }
-  //     );
-
-  //     const data = await res.json();
-
-  //     if (data.success) {
-  //       if (onUploadComplete) {
-  //         onUploadComplete();
-  //       }
-  //       setNewImage(null);
-  //       close();
-  //     }
-  //   } catch (err) {
-  //     console.error("Upload failed:", err);
-  //   }
-  // };
-
   const handleSubmit = async () => {
     if (!newImage) return;
 
@@ -128,19 +97,25 @@ export default function ProfilePictureModal({
           <Box
             sx={{
               width: "100%",
-              height: 300,
-              borderRadius: "md",
-              overflow: "hidden",
+              height: type === "cover" ? 300 : 300,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
               bgcolor: "#f5f5f5",
-              position: "relative",
+              borderRadius: type === "cover" ? "md" : "50%",
+              overflow: "hidden",
             }}
           >
             {previewURL && (
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={previewURL}
                 alt="preview"
-                style={{ objectFit: "contain" }}
+                style={{
+                  width: type === "cover" ? "100%" : 250,
+                  height: type === "cover" ? "100%" : 250,
+                  objectFit: "cover",
+                  borderRadius: type === "cover" ? 0 : "50%",
+                }}
               />
             )}
           </Box>
@@ -200,144 +175,3 @@ export default function ProfilePictureModal({
     </Modal>
   );
 }
-
-// import {
-//   Box,
-//   Modal,
-//   ModalClose,
-//   ModalDialog,
-//   Typography,
-//   IconButton,
-//   Tooltip,
-//   Divider,
-//   Input,
-//   Button,
-// } from "@mui/joy";
-// import { Camera, Trash } from "lucide-react";
-// import Image from "next/image";
-// import { useState, useEffect } from "react";
-
-// export default function ProfilePictureModal({ open, close, type, imgUrl }) {
-//   const [newImage, setNewImage] = useState(null);
-//   const [previewURL, setPreviewURL] = useState("");
-
-//   const buildFullUrl = (url) => {
-//     if (!url) return "";
-//     if (url.startsWith("http")) return url;
-//     return `${process.env.NEXT_PUBLIC_HOST_IP}${url}`;
-//   };
-
-//   useEffect(() => {
-//     if (imgUrl) {
-//       setPreviewURL(buildFullUrl(imgUrl));
-//     }
-//   }, [imgUrl]);
-
-//   const handleImageSelect = (e) => {
-//     const file = e.target.files[0];
-//     if (!file) return;
-
-//     setNewImage(file);
-//     setPreviewURL(URL.createObjectURL(file));
-//   };
-
-//   const handleRemove = () => {
-//     setNewImage(null);
-//     setPreviewURL(buildFullUrl(imgUrl)); // revert to original
-//   };
-
-//   const handleSubmit = async () => {
-//     if (!newImage) return;
-
-//     const formData = new FormData();
-//     formData.append("image", newImage);
-//     formData.append("type", type);
-
-//     try {
-//       const res = await fetch(
-//         `${process.env.NEXT_PUBLIC_HOST_IP}/api/upload/profile_pic`,
-//         {
-//           method: "POST",
-//           credentials: "include",
-//           body: formData,
-//         }
-//       );
-
-//       const data = await res.json();
-
-//       if (data.success) {
-//         setPreviewURL(buildFullUrl(data.profile_picture));
-//         close();
-//       }
-//     } catch (err) {
-//       console.error("Upload failed:", err);
-//     }
-//   };
-
-//   return (
-//     <Modal open={open} onClose={close}>
-//       <ModalDialog sx={{ width: 600, height: 500 }}>
-//         <ModalClose />
-//         <Box>
-//           <Typography sx={{ mb: 3 }} level="h3">
-//             {type === "cover" ? "Cover Photo" : "Profile Picture"}
-//           </Typography>
-
-//           <Box
-//             sx={{
-//               width: "100%",
-//               height: 300,
-//               borderRadius: 10,
-//               overflow: "hidden",
-//               bgcolor: "#f5f5f5",
-//             }}
-//           >
-//             {previewURL && (
-//               <Image
-//                 src={previewURL}
-//                 alt="preview"
-//                 fill
-//                 style={{ objectFit: "contain" }}
-//               />
-//             )}
-//           </Box>
-
-//           <Divider sx={{ mt: 3, mb: 3 }} />
-
-//           <Box sx={{ width: "100%", gap: 5, display: "flex" }}>
-//             <Input
-//               id="upload-photo"
-//               type="file"
-//               accept="image/*"
-//               hidden
-//               onChange={handleImageSelect}
-//             />
-
-//             <Tooltip title="Upload New Photo">
-//               <label htmlFor="upload-photo">
-//                 <IconButton component="span">
-//                   <Camera />
-//                 </IconButton>
-//               </label>
-//             </Tooltip>
-
-//             <Tooltip title="Remove Selected Photo">
-//               <IconButton onClick={handleRemove} disabled={!newImage}>
-//                 <Trash />
-//               </IconButton>
-//             </Tooltip>
-
-//             <Button
-//               variant="solid"
-//               color="primary"
-//               disabled={!newImage}
-//               onClick={handleSubmit}
-//             >
-//               Save
-//             </Button>
-//           </Box>
-//         </Box>
-//       </ModalDialog>
-//     </Modal>
-//   );
-// }

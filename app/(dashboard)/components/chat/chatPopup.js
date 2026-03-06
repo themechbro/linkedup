@@ -7,8 +7,41 @@ import ChatWindow from "../../messages/components/ChatWindow";
 
 export default function ChatPopup({ conversation, index, onClose }) {
   const [minimized, setMinimized] = useState(false);
+  const privateMediaHosts = (
+    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS ||
+    "blr1.kos.olakrutrimsvc.com"
+  )
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+
+  const resolveAssetUrl = (url) => {
+    if (!url) return "";
+    if (/^\/api\/private-media\?url=/i.test(url)) return url;
+
+    if (/^(https?:)?\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        if (privateMediaHosts.includes(parsed.hostname.toLowerCase())) {
+          return `/api/private-media?url=${encodeURIComponent(url)}`;
+        }
+      } catch {
+        return url;
+      }
+      return url;
+    }
+
+    const base = process.env.NEXT_PUBLIC_HOST_IP || "";
+    if (!base) return url;
+
+    const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `${normalizedBase}${normalizedPath}`;
+  };
 
   const otherUserId = conversation.other_user_id;
+  const otherUserAvatar =
+    resolveAssetUrl(conversation.other_user_picture) || "/default.img";
 
   return (
     <Box
@@ -61,10 +94,7 @@ export default function ChatPopup({ conversation, index, onClose }) {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Avatar
-            size="sm"
-            src={`${process.env.NEXT_PUBLIC_HOST_IP}${conversation.other_user_picture}`}
-          />
+          <Avatar size="sm" src={otherUserAvatar} />
 
           <Typography fontWeight="600">
             {conversation.other_user_name}

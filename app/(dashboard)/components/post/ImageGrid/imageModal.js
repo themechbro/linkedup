@@ -1,6 +1,7 @@
-import { Modal, ModalClose, ModalDialog, IconButton, Box } from "@mui/joy";
+import { Modal, ModalDialog, IconButton, Box } from "@mui/joy";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import VideoPlayer from "../player/videoPlayer";
+import Image from "next/image";
 
 export default function ImagegridModal({
   mediaViewer,
@@ -8,17 +9,22 @@ export default function ImagegridModal({
   setMediaViewer,
   media,
 }) {
+  const mediaCount = media?.length || 0;
+  const currentMedia = media?.[mediaViewer.currentIndex];
+
   const goToNext = () => {
+    if (mediaCount === 0) return;
     setMediaViewer((prev) => ({
       ...prev,
-      currentIndex: (prev.currentIndex + 1) % media.length,
+      currentIndex: (prev.currentIndex + 1) % mediaCount,
     }));
   };
 
   const goToPrev = () => {
+    if (mediaCount === 0) return;
     setMediaViewer((prev) => ({
       ...prev,
-      currentIndex: (prev.currentIndex - 1 + media.length) % media.length,
+      currentIndex: (prev.currentIndex - 1 + mediaCount) % mediaCount,
     }));
   };
 
@@ -34,8 +40,11 @@ export default function ImagegridModal({
     >
       <ModalDialog
         sx={{
-          maxWidth: "90vw",
-          maxHeight: "90vh",
+          width: { xs: "95vw", sm: "90vw" },
+          height: { xs: "85vh", sm: "90vh" },
+          maxWidth: "1400px",
+          maxHeight: "95vh",
+          minWidth: 320,
           p: 0,
           bgcolor: "black",
           overflow: "hidden",
@@ -55,7 +64,7 @@ export default function ImagegridModal({
           <X />
         </IconButton>
 
-        {media?.length > 1 && (
+        {mediaCount > 1 && (
           <>
             <IconButton
               onClick={goToPrev}
@@ -92,40 +101,37 @@ export default function ImagegridModal({
         <Box
           sx={{
             width: "100%",
-            height: "80vh",
+            height: "100%",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          {media[mediaViewer.currentIndex]?.type === "videos" ? (
-            // <video
-            //   src={`${process.env.NEXT_PUBLIC_HOST_IP}${
-            //     media[mediaViewer.currentIndex].url
-            //   }`}
-            //   controls
-            //   autoPlay
-            //   style={{
-            //     maxWidth: "100%",
-            //     maxHeight: "100%",
-            //     objectFit: "contain",
-            //   }}
-            // />
+          {currentMedia?.type === "videos" ? (
             <VideoPlayer
-              src={media[mediaViewer.currentIndex].url}
-              spriteSrc={media[mediaViewer.currentIndex].sprite_url}
+              src={currentMedia.url}
+              spriteSrc={currentMedia.sprite_url}
             />
-          ) : (
-            <img
-              src={media[mediaViewer.currentIndex]?.url}
-              alt="media"
-              style={{
-                maxWidth: "100%",
-                maxHeight: "100%",
-                objectFit: "contain",
+          ) : currentMedia?.url ? (
+            <Box
+              sx={{
+                position: "relative",
+                width: "100%",
+                height: "100%",
               }}
-            />
-          )}
+            >
+              <Image
+                src={currentMedia.url}
+                alt="media"
+                fill
+                sizes="100vw"
+                style={{
+                  objectFit: "contain",
+                }}
+                unoptimized
+              />
+            </Box>
+          ) : null}
         </Box>
 
         <Box
@@ -141,7 +147,7 @@ export default function ImagegridModal({
             borderRadius: "lg",
           }}
         >
-          {mediaViewer.currentIndex + 1} / {media.length}
+          {mediaViewer.currentIndex + 1} / {mediaCount}
         </Box>
       </ModalDialog>
     </Modal>

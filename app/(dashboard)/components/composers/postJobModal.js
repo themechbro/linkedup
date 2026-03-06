@@ -1,169 +1,3 @@
-// "use client";
-// import {
-//   Modal,
-//   ModalDialog,
-//   Typography,
-//   Box,
-//   ModalClose,
-//   Textarea,
-//   Tooltip,
-//   Button,
-//   Chip,
-//   Avatar,
-//   FormControl,
-//   Input,
-//   FormLabel,
-//   Stack,
-// } from "@mui/joy";
-// import { useState } from "react";
-
-// const JOB_TYPES = [
-//   "Full-time",
-//   "Part-time",
-//   "Internship",
-//   "Contract",
-//   "Remote",
-// ];
-
-// export default function PostJobModal({
-//   open,
-//   close,
-//   currentUser,
-//   onSubmit,
-//   profileUrl,
-// }) {
-//   const [title, setTitle] = useState("");
-//   const [company, setCompany] = useState("");
-//   const [location, setLocation] = useState("");
-//   const [jobType, setJobType] = useState("");
-//   const [description, setDescription] = useState("");
-
-//   const handlePost = () => {
-//     if (!title || !company) return;
-
-//     onSubmit?.({
-//       title,
-//       company,
-//       location,
-//       jobType,
-//       description,
-//       postedBy: currentUser?.id,
-//     });
-
-//     close();
-//   };
-
-//   return (
-//     <Modal open={open} onClose={close}>
-//       <ModalDialog
-//         sx={{
-//           width: "100%",
-//           maxWidth: 550,
-//           borderRadius: "md",
-//           p: 3,
-//           height: "auto",
-//           overflowY: "scroll",
-//         }}
-//       >
-//         <ModalClose />
-
-//         {/* Header */}
-//         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-//           <Avatar size="lg" src={profileUrl} />
-//           <Box sx={{ ml: 1 }}>
-//             <Typography level="title-md">
-//               {currentUser?.userData?.full_name || "User"}
-//             </Typography>
-//             <Typography level="body-sm" sx={{ color: "neutral.500" }}>
-//               Posting a job
-//             </Typography>
-//           </Box>
-//         </Box>
-
-//         {/* Job Title */}
-//         <FormControl sx={{ mb: 2 }}>
-//           <FormLabel>Job Title *</FormLabel>
-
-//           <Input
-//             placeholder="e.g., Frontend Developer"
-//             value={title}
-//             onChange={(e) => setTitle(e.target.value)}
-//           />
-//         </FormControl>
-
-//         {/* Company */}
-//         <FormControl sx={{ mb: 2 }}>
-//           <FormLabel>Company *</FormLabel>
-//           {currentUser?.userData?.isbrand ? (
-//             <Input
-//               value={currentUser.userData.full_name}
-//               disabled // brand users cannot edit
-//             />
-//           ) : (
-//             <Input
-//               placeholder="Company name"
-//               value={company}
-//               onChange={(e) => setCompany(e.target.value)}
-//             />
-//           )}
-//         </FormControl>
-
-//         {/* Location */}
-//         <FormControl sx={{ mb: 2 }}>
-//           <FormLabel>Location</FormLabel>
-//           <Input
-//             placeholder="e.g., Bengaluru, Remote"
-//             value={location}
-//             onChange={(e) => setLocation(e.target.value)}
-//           />
-//         </FormControl>
-
-//         {/* Job Type Chips */}
-//         <FormLabel sx={{ fontSize: 14, mb: 1 }}>Job Type</FormLabel>
-//         <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-//           {JOB_TYPES.map((type) => (
-//             <Chip
-//               key={type}
-//               variant={jobType === type ? "solid" : "outlined"}
-//               color="primary"
-//               onClick={() => setJobType(type)}
-//               sx={{ cursor: "pointer" }}
-//             >
-//               {type}
-//             </Chip>
-//           ))}
-//         </Stack>
-
-//         {/* Description */}
-//         <FormControl sx={{ mb: 3 }}>
-//           <FormLabel>Description</FormLabel>
-//           <Textarea
-//             minRows={4}
-//             placeholder="Describe the role, responsibilities, and requirements…"
-//             value={description}
-//             onChange={(e) => setDescription(e.target.value)}
-//           />
-//         </FormControl>
-
-//         {/* Footer Buttons */}
-//         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
-//           <Button variant="plain" onClick={close}>
-//             Cancel
-//           </Button>
-//           <Button
-//             variant="solid"
-//             color="primary"
-//             onClick={handlePost}
-//             disabled={!title || !company}
-//           >
-//             Post Job
-//           </Button>
-//         </Box>
-//       </ModalDialog>
-//     </Modal>
-//   );
-// }
-
 "use client";
 import {
   Modal,
@@ -197,6 +31,42 @@ export default function PostJobModal({
   refreshJobs,
   profileUrl,
 }) {
+  const privateMediaHosts = (
+    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS ||
+    "blr1.kos.olakrutrimsvc.com"
+  )
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+
+  const resolveAssetUrl = (url) => {
+    if (!url) return "";
+    if (/^\/api\/private-media\?url=/i.test(url)) return url;
+
+    if (/^(https?:)?\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        if (privateMediaHosts.includes(parsed.hostname.toLowerCase())) {
+          return `/api/private-media?url=${encodeURIComponent(url)}`;
+        }
+      } catch {
+        return url;
+      }
+      return url;
+    }
+
+    const base = process.env.NEXT_PUBLIC_HOST_IP || "";
+    if (!base) return url;
+
+    const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `${normalizedBase}${normalizedPath}`;
+  };
+
+  const resolvedProfileUrl = currentUser?.userData?.profile_picture
+    ? resolveAssetUrl(currentUser.userData.profile_picture)
+    : profileUrl || "/default-avatar.png";
+
   const [title, setTitle] = useState("");
   const [company, setCompany] = useState("");
   const [location, setLocation] = useState("");
@@ -261,7 +131,7 @@ export default function PostJobModal({
         <ModalClose />
 
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <Avatar size="lg" src={profileUrl} />
+          <Avatar size="lg" src={resolvedProfileUrl} />
           <Box sx={{ ml: 1 }}>
             <Typography level="title-md">
               {currentUser?.userData?.full_name}

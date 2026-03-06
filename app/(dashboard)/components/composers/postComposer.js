@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Card,
@@ -24,8 +24,42 @@ export default function PostComposer({ currentUser, onSucess, otherUserData }) {
   const [media, setMedia] = useState([]);
   const [mediaType, setMediaType] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [finalUrl, setFinalUrl] = useState("");
   const [jobModal, setJobModal] = useState(false);
+  const privateMediaHosts = (
+    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS ||
+    "blr1.kos.olakrutrimsvc.com"
+  )
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+
+  const resolveAssetUrl = (url) => {
+    if (!url) return "";
+    if (/^\/api\/private-media\?url=/i.test(url)) return url;
+
+    if (/^(https?:)?\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        if (privateMediaHosts.includes(parsed.hostname.toLowerCase())) {
+          return `/api/private-media?url=${encodeURIComponent(url)}`;
+        }
+      } catch {
+        return url;
+      }
+      return url;
+    }
+
+    const base = process.env.NEXT_PUBLIC_HOST_IP || "";
+    if (!base) return url;
+
+    const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `${normalizedBase}${normalizedPath}`;
+  };
+
+  const finalUrl = currentUser?.profile_picture
+    ? resolveAssetUrl(currentUser.profile_picture)
+    : "/default-avatar.png";
 
   const handleFileChange = (e, type) => {
     const files = Array.from(e.target.files);
@@ -60,19 +94,6 @@ export default function PostComposer({ currentUser, onSucess, otherUserData }) {
       setLoading(false);
     }
   };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const urlbuilder = () => {
-    if (currentUser.profile_picture) {
-      setFinalUrl(
-        `${process.env.NEXT_PUBLIC_HOST_IP}${currentUser.profile_picture}`,
-      );
-    }
-  };
-
-  useEffect(() => {
-    urlbuilder();
-  }, [urlbuilder]);
 
   return (
     <>

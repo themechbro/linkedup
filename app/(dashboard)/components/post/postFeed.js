@@ -226,16 +226,6 @@ export default function PostFeed({ uploadedPost }) {
   // -------------------------------------------------------
   // Auto-refresh setup
   // -------------------------------------------------------
-  // useEffect(() => {
-  //   if (posts.length === 0) return;
-
-  //   const interval = setInterval(() => {
-  //     checkForNewPosts();
-  //   }, REFRESH_INTERVAL);
-
-  //   return () => clearInterval(interval);
-  // }, [posts.length]);
-
   useEffect(() => {
     const interval = setInterval(() => {
       checkForNewPosts();

@@ -1,6 +1,41 @@
 import { Box, Avatar, Typography } from "@mui/joy";
 
 export default function TypingIndicator({ otherUser }) {
+  const privateMediaHosts = (
+    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS ||
+    "blr1.kos.olakrutrimsvc.com"
+  )
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+
+  const resolveAssetUrl = (url) => {
+    if (!url) return "";
+    if (/^\/api\/private-media\?url=/i.test(url)) return url;
+
+    if (/^(https?:)?\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        if (privateMediaHosts.includes(parsed.hostname.toLowerCase())) {
+          return `/api/private-media?url=${encodeURIComponent(url)}`;
+        }
+      } catch {
+        return url;
+      }
+      return url;
+    }
+
+    const base = process.env.NEXT_PUBLIC_HOST_IP || "";
+    if (!base) return url;
+
+    const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `${normalizedBase}${normalizedPath}`;
+  };
+
+  const otherUserAvatar =
+    resolveAssetUrl(otherUser?.profilePicture) || "/default.img";
+
   return (
     <Box
       sx={{
@@ -12,11 +47,7 @@ export default function TypingIndicator({ otherUser }) {
       }}
     >
       <Avatar
-        src={
-          otherUser?.profilePicture
-            ? `${process.env.NEXT_PUBLIC_HOST_IP}${otherUser.profilePicture}`
-            : "/default.img"
-        }
+        src={otherUserAvatar}
         size="sm"
       />
       <Box

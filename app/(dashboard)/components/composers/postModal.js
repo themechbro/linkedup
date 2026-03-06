@@ -26,6 +26,42 @@ export default function PostModal({
   currentUser,
   profileUrl,
 }) {
+  const privateMediaHosts = (
+    process.env.NEXT_PUBLIC_PRIVATE_MEDIA_HOSTS ||
+    "blr1.kos.olakrutrimsvc.com"
+  )
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+
+  const resolveAssetUrl = (url) => {
+    if (!url) return "";
+    if (/^\/api\/private-media\?url=/i.test(url)) return url;
+
+    if (/^(https?:)?\/\//i.test(url)) {
+      try {
+        const parsed = new URL(url);
+        if (privateMediaHosts.includes(parsed.hostname.toLowerCase())) {
+          return `/api/private-media?url=${encodeURIComponent(url)}`;
+        }
+      } catch {
+        return url;
+      }
+      return url;
+    }
+
+    const base = process.env.NEXT_PUBLIC_HOST_IP || "";
+    if (!base) return url;
+
+    const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+    return `${normalizedBase}${normalizedPath}`;
+  };
+
+  const resolvedProfileUrl = currentUser?.profile_picture
+    ? resolveAssetUrl(currentUser.profile_picture)
+    : profileUrl || "/default-avatar.png";
+
   return (
     <Modal open={open} onClose={() => setOpen(false)}>
       <ModalDialog
@@ -40,7 +76,7 @@ export default function PostModal({
       >
         <ModalClose />
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <Avatar size="lg" src={profileUrl} />
+          <Avatar size="lg" src={resolvedProfileUrl} />
           <Box sx={{ ml: 1 }}>
             <Typography level="title-md">
               {currentUser?.full_name || "User"}
