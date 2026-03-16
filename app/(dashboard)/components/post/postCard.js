@@ -63,6 +63,7 @@ export default function PostCard({
 
   const resolveAssetUrl = (url) => {
     if (!url) return "";
+    if (/^\/api\/private-media\?(url|key)=/i.test(url)) return url;
 
     if (/^(https?:)?\/\//i.test(url)) {
       try {
@@ -661,15 +662,7 @@ export default function PostCard({
                             </Box>
                           </>
                         ) : isVideo ? (
-                          <video
-                            src={m.url}
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              pointerEvents: "none",
-                            }}
-                          />
+                          <VideoPlayer src={m.url} spriteSrc={m.sprite_url} />
                         ) : (
                           <Image
                             src={m.url}

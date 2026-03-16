@@ -11,6 +11,7 @@ import Image from "next/image";
 import { renderContentWithHashtagsAndLinks } from "../lib/helpers";
 import ImagegridModal from "../ImageGrid/imageModal";
 import { useState } from "react";
+import VideoPlayer from "../player/videoPlayer";
 
 export default function RepostViewerModal({ repostedPost, open, close }) {
   const [mediaViewer, setMediaViewer] = useState({
@@ -27,6 +28,7 @@ export default function RepostViewerModal({ repostedPost, open, close }) {
 
   const resolveAssetUrl = (url) => {
     if (!url) return "";
+    if (/^\/api\/private-media\?(url|key)=/i.test(url)) return url;
 
     if (/^(https?:)?\/\//i.test(url)) {
       try {
@@ -196,7 +198,9 @@ export default function RepostViewerModal({ repostedPost, open, close }) {
                                 height: "300px",
                               }),
                           }}
-                          onClick={() => openMediaViewer(i)}
+                          onClick={() => {
+                            if (!isVideo) openMediaViewer(i);
+                          }}
                         >
                           {isLastItem ? (
                             <>
@@ -226,15 +230,7 @@ export default function RepostViewerModal({ repostedPost, open, close }) {
                               </Box>
                             </>
                           ) : isVideo ? (
-                            <video
-                              src={m.url}
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover",
-                                pointerEvents: "none",
-                              }}
-                            />
+                            <VideoPlayer src={m.url} spriteSrc={m.sprite_url} />
                           ) : (
                             <Image
                               src={m.url}

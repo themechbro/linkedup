@@ -153,18 +153,29 @@ export async function GET(request) {
   }
 
   try {
+    const keyLower = key.toLowerCase();
+    const looksLikePlaylist = keyLower.endsWith(".m3u8");
     const command = new GetObjectCommand({
       Bucket: bucket,
       Key: key,
-      ...(rangeHeader ? { Range: rangeHeader } : {}),
+      ...(rangeHeader && !looksLikePlaylist ? { Range: rangeHeader } : {}),
     });
 
-    const object = await s3Client.send(command);
-    const contentType = object.ContentType || "";
-    const keyLower = key.toLowerCase();
-    const isM3u8 =
-      !rangeHeader &&
-      (keyLower.endsWith(".m3u8") || /mpegurl/i.test(contentType));
+    let object = await s3Client.send(command);
+    let contentType = object.ContentType || "";
+    let isM3u8 = looksLikePlaylist || /mpegurl/i.test(contentType);
+
+    if (rangeHeader && isM3u8 && !looksLikePlaylist) {
+      // Playlists must be fetched fully so URIs can be rewritten safely.
+      object = await s3Client.send(
+        new GetObjectCommand({
+          Bucket: bucket,
+          Key: key,
+        }),
+      );
+      contentType = object.ContentType || contentType;
+      isM3u8 = true;
+    }
 
     if (isM3u8) {
       let playlistText = "";

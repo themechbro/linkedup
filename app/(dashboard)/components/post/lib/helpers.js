@@ -4,13 +4,14 @@ import { Typography } from "@mui/joy";
 export const deletePost = async (post_id, current_user) => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_HOST_IP_MICRO}/api/posts/${post_id}`,
+      `${process.env.NEXT_PUBLIC_HOST_IP}/api/posts/delete/${post_id}`,
       {
         method: "DELETE",
         headers: {
           Accept: "application/json",
           "X-User-Id": current_user,
         },
+        credentials: "include",
       },
     );
 
